@@ -1,0 +1,18 @@
+# Tested with Python 3.10-3.12.
+# DashScope LLM calls go through the openai>=1.30 SDK (no separate
+# `dashscope` package is required). For GPU CLIP encoding, install a
+# CUDA-enabled torch build that matches your platform.
+
+pandas>=2.0
+numpy>=1.24
+scipy>=1.10
+scikit-learn>=1.3
+statsmodels>=0.14
+openpyxl>=3.1
+pyarrow>=14.0
+tqdm>=4.66
+httpx>=0.27
+openai>=1.30
+pillow>=10.0
+torch>=2.1
+transformers>=4.38

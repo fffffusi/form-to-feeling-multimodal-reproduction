@@ -1,0 +1,52 @@
+{
+  "_meta": {
+    "rule": "否定词位于命中词前1-3个字符内时,触发polarity反转。需排除'不错/不少'等固定搭配",
+    "polarity_reversal": "negated=True 时 final_value 符号反转"
+  },
+
+  "negation_words": [
+    "不",
+    "没",
+    "无",
+    "并不",
+    "并没",
+    "毫无",
+    "未",
+    "从不",
+    "绝不"
+  ],
+
+  "exception_phrases": {
+    "comment": "这些词组中虽含否定词但不表否定,需在LLM prompt中提醒",
+    "phrases": [
+      "不错",
+      "不少",
+      "不止",
+      "不仅",
+      "不但",
+      "不光",
+      "无论",
+      "无比"
+    ]
+  },
+
+  "implementation_logic": {
+    "step1": "LLM抽取时根据上下文直接判断negated字段(true/false),不让LLM自己反转polarity",
+    "step2": "代码层面: final_value = (-1 if negated else 1) * polarity * degree_weight",
+    "step3": "示例: '不轻薄' → polarity=1(轻薄是正向词→在'厚重-轻薄'维度的反向极性词,polarity本应=-1...等等)"
+  },
+
+  "_clarification_for_bipolar_dimension": {
+    "important": "对bipolar维度,polarity定义如下:",
+    "rules": [
+      "维度命名格式 'A-B', A是正向, B是反向",
+      "命中A方向词 → polarity=1",
+      "命中B方向词 → polarity=-1",
+      "negated=true 反转最终符号: final_value = -1 * sign(polarity) * weight",
+      "示例1: '高级感' → polarity=1, negated=False, final=+weight",
+      "示例2: '不高级' → polarity=1, negated=True, final=-weight",
+      "示例3: '廉价' → polarity=-1, negated=False, final=-weight",
+      "示例4: '不廉价' → polarity=-1, negated=True, final=+weight"
+    ]
+  }
+}

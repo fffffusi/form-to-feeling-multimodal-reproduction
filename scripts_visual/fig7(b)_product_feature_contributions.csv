@@ -1,0 +1,379 @@
+﻿PC,product_id,side,feature (Chinese),feature_short,layer,standardized_feature_value,loading,contribution
+PC1,1—13,high,oh:桌面样式（复杂程度）,Desktop complexity,onehot,-0.19219603,-0.152601448,0.029329392
+PC1,1—13,high,oh:配件多少程度,Accessories,onehot,-0.319149186,-0.130708659,0.041715562
+PC1,1—13,high,oh:是否有收纳,Storage,onehot,-0.112272178,-0.079176931,0.008889366
+PC1,1—13,high,oh:是否有控制面板,Control panel,onehot,-0.560956161,-0.078514356,0.044043111
+PC1,1—13,high,oh:桌腿造型_t1,Leg T/Y,onehot,0.158418828,0.030341516,0.004806667
+PC1,1—13,high,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,-0.109243286,0.008898763
+PC1,1—13,high,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,0.105066855,-0.007094363
+PC1,1—13,high,oh:桌腿造型_t4,Leg Rack,onehot,-0.076101943,0.001969297,-0.000149867
+PC1,1—13,high,oh:桌腿造型_t5,Leg Cabinet,onehot,-0.054554473,-0.042424993,0.002314473
+PC1,1—13,high,oh:材质配色_c1,Color Dark wood,onehot,-0.244198746,-0.121336322,0.029630178
+PC1,1—13,high,oh:材质配色_c2,Color Light wood,onehot,-0.084049772,0.100451247,-0.008442904
+PC1,1—13,high,oh:材质配色_c3,Color White,onehot,0.534522484,0.249329777,0.133272372
+PC1,1—13,high,oh:材质配色_c4,Color Black/Gray,onehot,-0.137794564,-0.1469855,0.020253803
+PC1,1—13,high,oh:材质配色_c5,Color Mixed material,onehot,-0.058015034,-0.0395017,0.002291693
+PC1,1—13,high,clip_pc1,CLIP-PC1,clip-image,0.489873703,0.197528999,0.096764262
+PC1,1—13,high,clip_pc2,CLIP-PC2,clip-image,0.557858674,0.343986321,0.191895753
+PC1,1—13,high,clip_pc3,CLIP-PC3,clip-image,-0.162109304,-0.10661448,0.017283199
+PC1,1—13,high,clip_pc4,CLIP-PC4,clip-image,-0.075871374,-0.076459195,0.005801064
+PC1,1—13,high,clip_pc5,CLIP-PC5,clip-image,-0.035502064,-0.05273523,0.00187221
+PC1,1—13,high,clip_pc6,CLIP-PC6,clip-image,-0.181238832,-0.117893007,0.021366791
+PC1,1—13,high,clip_pc7,CLIP-PC7,clip-image,0.220136722,-0.059471542,-0.01309187
+PC1,1—13,high,clip_pc8,CLIP-PC8,clip-image,0.034859781,0.099075581,0.003453753
+PC1,1—13,high,concept:ME1_高级_廉价,Premium,clip-text,-0.631864627,-0.369221068,0.233297732
+PC1,1—13,high,concept:ME2_厚重_轻薄,Heavy,clip-text,-0.631622223,-0.430062789,0.271637215
+PC1,1—13,high,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,0.714039435,0.486932583,0.347689067
+PC1,1—13,high,concept:ME4_精致美观_粗糙难看,Refined,clip-text,-0.13694658,-0.134173777,0.01837464
+PC1,1—13,high,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,-0.138857117,-0.174298421,0.024202576
+PC1,6—11,low,oh:桌面样式（复杂程度）,Desktop complexity,onehot,0.036608768,-0.152601448,-0.005586551
+PC1,6—11,low,oh:配件多少程度,Accessories,onehot,0.306633532,-0.130708659,-0.040079658
+PC1,6—11,low,oh:是否有收纳,Storage,onehot,-0.112272178,-0.079176931,0.008889366
+PC1,6—11,low,oh:是否有控制面板,Control panel,onehot,0.127333607,-0.078514356,-0.009997516
+PC1,6—11,low,oh:桌腿造型_t1,Leg T/Y,onehot,0.158418828,0.030341516,0.004806667
+PC1,6—11,low,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,-0.109243286,0.008898763
+PC1,6—11,low,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,0.105066855,-0.007094363
+PC1,6—11,low,oh:桌腿造型_t4,Leg Rack,onehot,-0.076101943,0.001969297,-0.000149867
+PC1,6—11,low,oh:桌腿造型_t5,Leg Cabinet,onehot,-0.054554473,-0.042424993,0.002314473
+PC1,6—11,low,oh:材质配色_c1,Color Dark wood,onehot,-0.244198746,-0.121336322,0.029630178
+PC1,6—11,low,oh:材质配色_c2,Color Light wood,onehot,-0.084049772,0.100451247,-0.008442904
+PC1,6—11,low,oh:材质配色_c3,Color White,onehot,-0.133630621,0.249329777,-0.033318093
+PC1,6—11,low,oh:材质配色_c4,Color Black/Gray,onehot,0.518370025,-0.1469855,-0.076192877
+PC1,6—11,low,oh:材质配色_c5,Color Mixed material,onehot,-0.058015034,-0.0395017,0.002291693
+PC1,6—11,low,clip_pc1,CLIP-PC1,clip-image,0.473849728,0.197528999,0.093599062
+PC1,6—11,low,clip_pc2,CLIP-PC2,clip-image,-0.998498229,0.343986321,-0.343469732
+PC1,6—11,low,clip_pc3,CLIP-PC3,clip-image,0.119323209,-0.10661448,-0.012721582
+PC1,6—11,low,clip_pc4,CLIP-PC4,clip-image,0.556818568,-0.076459195,-0.0425739
+PC1,6—11,low,clip_pc5,CLIP-PC5,clip-image,0.071178992,-0.05273523,-0.00375364
+PC1,6—11,low,clip_pc6,CLIP-PC6,clip-image,0.054841783,-0.117893007,-0.006465463
+PC1,6—11,low,clip_pc7,CLIP-PC7,clip-image,-0.204989587,-0.059471542,0.012191047
+PC1,6—11,low,clip_pc8,CLIP-PC8,clip-image,-0.672065177,0.099075581,-0.066585248
+PC1,6—11,low,concept:ME1_高级_廉价,Premium,clip-text,0.177792001,-0.369221068,-0.065644553
+PC1,6—11,low,concept:ME2_厚重_轻薄,Heavy,clip-text,0.571441713,-0.430062789,-0.245755817
+PC1,6—11,low,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,-1.798096066,0.486932583,-0.875551562
+PC1,6—11,low,concept:ME4_精致美观_粗糙难看,Refined,clip-text,1.243999512,-0.134173777,-0.166912113
+PC1,6—11,low,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,1.270031114,-0.174298421,-0.221364418
+PC2,2—15,high,oh:桌面样式（复杂程度）,Desktop complexity,onehot,0.036608768,-0.006246613,-0.000228681
+PC2,2—15,high,oh:配件多少程度,Accessories,onehot,0.619524891,0.177495593,0.109962938
+PC2,2—15,high,oh:是否有收纳,Storage,onehot,-0.112272178,-0.072563986,0.008146917
+PC2,2—15,high,oh:是否有控制面板,Control panel,onehot,0.127333607,-0.045237758,-0.005760287
+PC2,2—15,high,oh:桌腿造型_t1,Leg T/Y,onehot,0.158418828,0.044099123,0.006986131
+PC2,2—15,high,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,-0.100856309,0.008215575
+PC2,2—15,high,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,0.093464789,-0.006310964
+PC2,2—15,high,oh:桌腿造型_t4,Leg Rack,onehot,-0.076101943,0.007568752,-0.000575997
+PC2,2—15,high,oh:桌腿造型_t5,Leg Cabinet,onehot,-0.054554473,-0.078621519,0.004289156
+PC2,2—15,high,oh:材质配色_c1,Color Dark wood,onehot,-0.244198746,-0.279386556,0.068225847
+PC2,2—15,high,oh:材质配色_c2,Color Light wood,onehot,-0.084049772,-0.039391254,0.003310826
+PC2,2—15,high,oh:材质配色_c3,Color White,onehot,-0.133630621,0.126568057,-0.016913368
+PC2,2—15,high,oh:材质配色_c4,Color Black/Gray,onehot,0.518370025,0.249809494,0.129493753
+PC2,2—15,high,oh:材质配色_c5,Color Mixed material,onehot,-0.058015034,-0.009537962,0.000553345
+PC2,2—15,high,clip_pc1,CLIP-PC1,clip-image,0.318619224,0.415652782,0.132434967
+PC2,2—15,high,clip_pc2,CLIP-PC2,clip-image,-0.53114171,-0.196321256,0.104274408
+PC2,2—15,high,clip_pc3,CLIP-PC3,clip-image,0.300601571,-0.030306093,-0.009110059
+PC2,2—15,high,clip_pc4,CLIP-PC4,clip-image,1.139516561,0.113362427,0.129178363
+PC2,2—15,high,clip_pc5,CLIP-PC5,clip-image,0.386962865,0.019268456,0.007456177
+PC2,2—15,high,clip_pc6,CLIP-PC6,clip-image,0.211300109,0.086173232,0.018208413
+PC2,2—15,high,clip_pc7,CLIP-PC7,clip-image,-0.333345478,0.008388896,-0.0027964
+PC2,2—15,high,clip_pc8,CLIP-PC8,clip-image,-0.389116969,-0.014836756,0.005773234
+PC2,2—15,high,concept:ME1_高级_廉价,Premium,clip-text,0.89441216,-0.082370524,-0.073673198
+PC2,2—15,high,concept:ME2_厚重_轻薄,Heavy,clip-text,-0.182520795,-0.194141299,0.035434824
+PC2,2—15,high,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,-0.206320606,0.01544622,-0.003186873
+PC2,2—15,high,concept:ME4_精致美观_粗糙难看,Refined,clip-text,1.402386912,0.448058091,0.628350802
+PC2,2—15,high,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,1.570152566,0.545245613,0.856118798
+PC2,2—26,low,oh:桌面样式（复杂程度）,Desktop complexity,onehot,0.494218363,-0.006246613,-0.003087191
+PC2,2—26,low,oh:配件多少程度,Accessories,onehot,-0.319149186,0.177495593,-0.056647574
+PC2,2—26,low,oh:是否有收纳,Storage,onehot,0.63620901,-0.072563986,-0.046165862
+PC2,2—26,low,oh:是否有控制面板,Control panel,onehot,-0.560956161,-0.045237758,0.025376399
+PC2,2—26,low,oh:桌腿造型_t1,Leg T/Y,onehot,-0.450884357,0.044099123,-0.019883605
+PC2,2—26,low,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,-0.100856309,0.008215575
+PC2,2—26,low,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,0.093464789,-0.006310964
+PC2,2—26,low,oh:桌腿造型_t4,Leg Rack,onehot,-0.076101943,0.007568752,-0.000575997
+PC2,2—26,low,oh:桌腿造型_t5,Leg Cabinet,onehot,1.309307341,-0.078621519,-0.102939733
+PC2,2—26,low,oh:材质配色_c1,Color Dark wood,onehot,0.292501795,-0.279386556,-0.081721069
+PC2,2—26,low,oh:材质配色_c2,Color Light wood,onehot,-0.084049772,-0.039391254,0.003310826
+PC2,2—26,low,oh:材质配色_c3,Color White,onehot,-0.133630621,0.126568057,-0.016913368
+PC2,2—26,low,oh:材质配色_c4,Color Black/Gray,onehot,-0.137794564,0.249809494,-0.03442239
+PC2,2—26,low,oh:材质配色_c5,Color Mixed material,onehot,-0.058015034,-0.009537962,0.000553345
+PC2,2—26,low,clip_pc1,CLIP-PC1,clip-image,-0.360099012,0.415652782,-0.149676156
+PC2,2—26,low,clip_pc2,CLIP-PC2,clip-image,0.267541109,-0.196321256,-0.052524007
+PC2,2—26,low,clip_pc3,CLIP-PC3,clip-image,0.833975802,-0.030306093,-0.025274548
+PC2,2—26,low,clip_pc4,CLIP-PC4,clip-image,0.051628852,0.113362427,0.005852772
+PC2,2—26,low,clip_pc5,CLIP-PC5,clip-image,0.255568115,0.019268456,0.004924403
+PC2,2—26,low,clip_pc6,CLIP-PC6,clip-image,-0.019637213,0.086173232,-0.001692202
+PC2,2—26,low,clip_pc7,CLIP-PC7,clip-image,-0.024504578,0.008388896,-0.000205566
+PC2,2—26,low,clip_pc8,CLIP-PC8,clip-image,-0.124363525,-0.014836756,0.001845151
+PC2,2—26,low,concept:ME1_高级_廉价,Premium,clip-text,0.759789343,-0.082370524,-0.062584246
+PC2,2—26,low,concept:ME2_厚重_轻薄,Heavy,clip-text,0.671627948,-0.194141299,-0.130390722
+PC2,2—26,low,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,0.017087126,0.01544622,0.000263932
+PC2,2—26,low,concept:ME4_精致美观_粗糙难看,Refined,clip-text,-0.692158158,0.448058091,-0.310127062
+PC2,2—26,low,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,-0.346792932,0.545245613,-0.189087325
+PC3,8—9,high,oh:桌面样式（复杂程度）,Desktop complexity,onehot,0.494218363,-0.024841991,-0.012277368
+PC3,8—9,high,oh:配件多少程度,Accessories,onehot,-0.006257827,-0.033910287,0.000212205
+PC3,8—9,high,oh:是否有收纳,Storage,onehot,0.63620901,0.171950764,0.109396625
+PC3,8—9,high,oh:是否有控制面板,Control panel,onehot,-0.560956161,-0.298334206,0.167352411
+PC3,8—9,high,oh:桌腿造型_t1,Leg T/Y,onehot,-0.450884357,-0.306183661,0.138053423
+PC3,8—9,high,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,0.051547518,-0.004198969
+PC3,8—9,high,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,0.115594088,-0.007805187
+PC3,8—9,high,oh:桌腿造型_t4,Leg Rack,onehot,-0.076101943,0.173836712,-0.013229312
+PC3,8—9,high,oh:桌腿造型_t5,Leg Cabinet,onehot,1.309307341,0.238252782,0.311946116
+PC3,8—9,high,oh:材质配色_c1,Color Dark wood,onehot,-0.244198746,-0.09617317,0.023485368
+PC3,8—9,high,oh:材质配色_c2,Color Light wood,onehot,-0.084049772,-0.018157793,0.001526158
+PC3,8—9,high,oh:材质配色_c3,Color White,onehot,-0.133630621,0.080185005,-0.010715172
+PC3,8—9,high,oh:材质配色_c4,Color Black/Gray,onehot,-0.137794564,-0.032897588,0.004533109
+PC3,8—9,high,oh:材质配色_c5,Color Mixed material,onehot,1.23120795,0.16600405,0.204385506
+PC3,8—9,high,clip_pc1,CLIP-PC1,clip-image,-0.098092624,0.080548888,-0.007901252
+PC3,8—9,high,clip_pc2,CLIP-PC2,clip-image,0.177196204,0.181560994,0.032171919
+PC3,8—9,high,clip_pc3,CLIP-PC3,clip-image,0.952459524,0.473516024,0.451004847
+PC3,8—9,high,clip_pc4,CLIP-PC4,clip-image,-0.434181398,0.018121254,-0.007867912
+PC3,8—9,high,clip_pc5,CLIP-PC5,clip-image,0.9537613,0.174882805,0.166796451
+PC3,8—9,high,clip_pc6,CLIP-PC6,clip-image,0.852084942,0.175873334,0.149859019
+PC3,8—9,high,clip_pc7,CLIP-PC7,clip-image,-0.223408013,0.081044252,-0.018105935
+PC3,8—9,high,clip_pc8,CLIP-PC8,clip-image,-0.009356262,0.043565371,-0.000407609
+PC3,8—9,high,concept:ME1_高级_廉价,Premium,clip-text,2.07804013,0.449433525,0.933940901
+PC3,8—9,high,concept:ME2_厚重_轻薄,Heavy,clip-text,0.250023318,-0.102710625,-0.025680051
+PC3,8—9,high,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,-0.650893641,0.200204559,-0.130311875
+PC3,8—9,high,concept:ME4_精致美观_粗糙难看,Refined,clip-text,-0.109876354,-0.164205602,0.018042313
+PC3,8—9,high,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,-0.148064903,0.157156144,-0.023269309
+PC3,6—13,low,oh:桌面样式（复杂程度）,Desktop complexity,onehot,0.036608768,-0.024841991,-0.000909435
+PC3,6—13,low,oh:配件多少程度,Accessories,onehot,-0.319149186,-0.033910287,0.01082244
+PC3,6—13,low,oh:是否有收纳,Storage,onehot,-0.112272178,0.171950764,-0.019305287
+PC3,6—13,low,oh:是否有控制面板,Control panel,onehot,0.127333607,-0.298334206,-0.037987971
+PC3,6—13,low,oh:桌腿造型_t1,Leg T/Y,onehot,0.158418828,-0.306183661,-0.048505257
+PC3,6—13,low,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,0.051547518,-0.004198969
+PC3,6—13,low,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,0.115594088,-0.007805187
+PC3,6—13,low,oh:桌腿造型_t4,Leg Rack,onehot,-0.076101943,0.173836712,-0.013229312
+PC3,6—13,low,oh:桌腿造型_t5,Leg Cabinet,onehot,-0.054554473,0.238252782,-0.012997755
+PC3,6—13,low,oh:材质配色_c1,Color Dark wood,onehot,0.292501795,-0.09617317,-0.028130825
+PC3,6—13,low,oh:材质配色_c2,Color Light wood,onehot,-0.084049772,-0.018157793,0.001526158
+PC3,6—13,low,oh:材质配色_c3,Color White,onehot,-0.133630621,0.080185005,-0.010715172
+PC3,6—13,low,oh:材质配色_c4,Color Black/Gray,onehot,-0.137794564,-0.032897588,0.004533109
+PC3,6—13,low,oh:材质配色_c5,Color Mixed material,onehot,-0.058015034,0.16600405,-0.009630731
+PC3,6—13,low,clip_pc1,CLIP-PC1,clip-image,-0.144165685,0.080548888,-0.011612386
+PC3,6—13,low,clip_pc2,CLIP-PC2,clip-image,-0.010531229,0.181560994,-0.00191206
+PC3,6—13,low,clip_pc3,CLIP-PC3,clip-image,-0.595405182,0.473516024,-0.281933894
+PC3,6—13,low,clip_pc4,CLIP-PC4,clip-image,-0.529874174,0.018121254,-0.009601985
+PC3,6—13,low,clip_pc5,CLIP-PC5,clip-image,-0.025767487,0.174882805,-0.00450629
+PC3,6—13,low,clip_pc6,CLIP-PC6,clip-image,-0.274789377,0.175873334,-0.048328124
+PC3,6—13,low,clip_pc7,CLIP-PC7,clip-image,0.183900518,0.081044252,0.01490408
+PC3,6—13,low,clip_pc8,CLIP-PC8,clip-image,-0.19431803,0.043565371,-0.008465537
+PC3,6—13,low,concept:ME1_高级_廉价,Premium,clip-text,-0.915629239,0.449433525,-0.411514476
+PC3,6—13,low,concept:ME2_厚重_轻薄,Heavy,clip-text,0.523732355,-0.102710625,-0.053792877
+PC3,6—13,low,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,-0.519122816,0.200204559,-0.103930755
+PC3,6—13,low,concept:ME4_精致美观_粗糙难看,Refined,clip-text,0.0256931,-0.164205602,-0.004218951
+PC3,6—13,low,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,-0.460290305,0.157156144,-0.072337449
+PC4,2—13,high,oh:桌面样式（复杂程度）,Desktop complexity,onehot,-0.19219603,-0.073664761,0.014158075
+PC4,2—13,high,oh:配件多少程度,Accessories,onehot,-0.006257827,-0.012429767,7.78E-05
+PC4,2—13,high,oh:是否有收纳,Storage,onehot,0.63620901,0.082908157,0.052746916
+PC4,2—13,high,oh:是否有控制面板,Control panel,onehot,-0.560956161,-0.252849679,0.141837586
+PC4,2—13,high,oh:桌腿造型_t1,Leg T/Y,onehot,-0.450884357,-0.280729901,0.126576721
+PC4,2—13,high,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,0.090527761,-0.00737423
+PC4,2—13,high,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,0.164414859,-0.011101681
+PC4,2—13,high,oh:桌腿造型_t4,Leg Rack,onehot,0.938590635,0.28181256,0.26450663
+PC4,2—13,high,oh:桌腿造型_t5,Leg Cabinet,onehot,-0.054554473,-0.078496664,0.004282344
+PC4,2—13,high,oh:材质配色_c1,Color Dark wood,onehot,0.292501795,0.02557841,0.007481731
+PC4,2—13,high,oh:材质配色_c2,Color Light wood,onehot,-0.084049772,-0.008320417,0.000699329
+PC4,2—13,high,oh:材质配色_c3,Color White,onehot,-0.133630621,0.023411119,-0.003128442
+PC4,2—13,high,oh:材质配色_c4,Color Black/Gray,onehot,-0.137794564,-0.035440361,0.004883489
+PC4,2—13,high,oh:材质配色_c5,Color Mixed material,onehot,-0.058015034,-0.025496107,0.001479158
+PC4,2—13,high,clip_pc1,CLIP-PC1,clip-image,-0.247998126,0.071193236,-0.017655789
+PC4,2—13,high,clip_pc2,CLIP-PC2,clip-image,0.159002837,0.036515981,0.005806145
+PC4,2—13,high,clip_pc3,CLIP-PC3,clip-image,0.900070851,0.074502571,0.067057592
+PC4,2—13,high,clip_pc4,CLIP-PC4,clip-image,-0.40595843,-0.250611801,0.101737973
+PC4,2—13,high,clip_pc5,CLIP-PC5,clip-image,-0.442039328,-0.283088436,0.125136222
+PC4,2—13,high,clip_pc6,CLIP-PC6,clip-image,0.311332628,-0.019120233,-0.005952752
+PC4,2—13,high,clip_pc7,CLIP-PC7,clip-image,1.096447068,0.358652345,0.393243312
+PC4,2—13,high,clip_pc8,CLIP-PC8,clip-image,-0.320864435,-0.341928987,0.109712851
+PC4,2—13,high,concept:ME1_高级_廉价,Premium,clip-text,0.224208706,-0.335677993,-0.075261928
+PC4,2—13,high,concept:ME2_厚重_轻薄,Heavy,clip-text,1.169406685,0.380830392,0.445345607
+PC4,2—13,high,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,0.560000485,0.040937825,0.022925202
+PC4,2—13,high,concept:ME4_精致美观_粗糙难看,Refined,clip-text,0.395027611,0.232274163,0.091754708
+PC4,2—13,high,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,-0.279294105,-0.081662249,0.022807785
+PC4,3—23,low,oh:桌面样式（复杂程度）,Desktop complexity,onehot,0.494218363,-0.073664761,-0.036406478
+PC4,3—23,low,oh:配件多少程度,Accessories,onehot,-0.319149186,-0.012429767,0.00396695
+PC4,3—23,low,oh:是否有收纳,Storage,onehot,-0.112272178,0.082908157,-0.009308279
+PC4,3—23,low,oh:是否有控制面板,Control panel,onehot,-0.560956161,-0.252849679,0.141837586
+PC4,3—23,low,oh:桌腿造型_t1,Leg T/Y,onehot,-0.450884357,-0.280729901,0.126576721
+PC4,3—23,low,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,0.090527761,-0.00737423
+PC4,3—23,low,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,0.164414859,-0.011101681
+PC4,3—23,low,oh:桌腿造型_t4,Leg Rack,onehot,-0.076101943,0.28181256,-0.021446483
+PC4,3—23,low,oh:桌腿造型_t5,Leg Cabinet,onehot,1.309307341,-0.078496664,-0.102776259
+PC4,3—23,low,oh:材质配色_c1,Color Dark wood,onehot,0.292501795,0.02557841,0.007481731
+PC4,3—23,low,oh:材质配色_c2,Color Light wood,onehot,-0.084049772,-0.008320417,0.000699329
+PC4,3—23,low,oh:材质配色_c3,Color White,onehot,-0.133630621,0.023411119,-0.003128442
+PC4,3—23,low,oh:材质配色_c4,Color Black/Gray,onehot,-0.137794564,-0.035440361,0.004883489
+PC4,3—23,low,oh:材质配色_c5,Color Mixed material,onehot,-0.058015034,-0.025496107,0.001479158
+PC4,3—23,low,clip_pc1,CLIP-PC1,clip-image,-0.272818946,0.071193236,-0.019422864
+PC4,3—23,low,clip_pc2,CLIP-PC2,clip-image,-0.020297158,0.036515981,-0.000741171
+PC4,3—23,low,clip_pc3,CLIP-PC3,clip-image,1.357477383,0.074502571,0.101135555
+PC4,3—23,low,clip_pc4,CLIP-PC4,clip-image,0.077119143,-0.250611801,-0.019326967
+PC4,3—23,low,clip_pc5,CLIP-PC5,clip-image,0.117341423,-0.283088436,-0.033218
+PC4,3—23,low,clip_pc6,CLIP-PC6,clip-image,0.462555205,-0.019120233,-0.008844163
+PC4,3—23,low,clip_pc7,CLIP-PC7,clip-image,-0.568308896,0.358652345,-0.203825318
+PC4,3—23,low,clip_pc8,CLIP-PC8,clip-image,0.556463927,-0.341928987,-0.190271147
+PC4,3—23,low,concept:ME1_高级_廉价,Premium,clip-text,1.437582331,-0.335677993,-0.482564751
+PC4,3—23,low,concept:ME2_厚重_轻薄,Heavy,clip-text,-0.425190093,0.380830392,-0.16192531
+PC4,3—23,low,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,-0.228446431,0.040937825,-0.0093521
+PC4,3—23,low,concept:ME4_精致美观_粗糙难看,Refined,clip-text,-0.999376372,0.232274163,-0.23212931
+PC4,3—23,low,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,0.165274839,-0.081662249,-0.013496715
+PC5,2—38,high,oh:桌面样式（复杂程度）,Desktop complexity,onehot,-0.19219603,-0.134795496,0.025907159
+PC5,2-38,high,oh:配件多少程度,Accessories,onehot,-0.006257827,-0.142133346,0.000889446
+PC5,2-38,high,oh:是否有收纳,Storage,onehot,-0.112272178,-0.093714118,0.010521488
+PC5,2-38,high,oh:是否有控制面板,Control panel,onehot,-0.560956161,0.005234086,-0.002936093
+PC5,2-38,high,oh:桌腿造型_t1,Leg T/Y,onehot,-0.450884357,0.066672597,-0.030061631
+PC5,2-38,high,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,-0.068660384,0.005592952
+PC5,2-38,high,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,-0.069469395,0.004690738
+PC5,2-38,high,oh:桌腿造型_t4,Leg Rack,onehot,0.938590635,0.088421218,0.082991327
+PC5,2-38,high,oh:桌腿造型_t5,Leg Cabinet,onehot,-0.054554473,-0.086181602,0.004701592
+PC5,2-38,high,oh:材质配色_c1,Color Dark wood,onehot,-0.244198746,-0.074858674,0.018280394
+PC5,2-38,high,oh:材质配色_c2,Color Light wood,onehot,-0.084049772,-0.133285084,0.011202581
+PC5,2-38,high,oh:材质配色_c3,Color White,onehot,-0.133630621,-0.060811014,0.008126213
+PC5,2-38,high,oh:材质配色_c4,Color Black/Gray,onehot,-0.137794564,0.235997006,-0.032519104
+PC5,2-38,high,oh:材质配色_c5,Color Mixed material,onehot,1.23120795,0.017472304,0.02151204
+PC5,2-38,high,clip_pc1,CLIP-PC1,clip-image,0.215018736,0.042385977,0.009113779
+PC5,2-38,high,clip_pc2,CLIP-PC2,clip-image,-0.190377851,-0.18704677,0.035609562
+PC5,2-38,high,clip_pc3,CLIP-PC3,clip-image,0.340356816,0.040830865,0.013897063
+PC5,2-38,high,clip_pc4,CLIP-PC4,clip-image,-0.324640177,-0.057785351,0.018759447
+PC5,2-38,high,clip_pc5,CLIP-PC5,clip-image,0.221982483,0.079819945,0.01771863
+PC5,2-38,high,clip_pc6,CLIP-PC6,clip-image,-0.333585145,-0.342150428,0.1141363
+PC5,2-38,high,clip_pc7,CLIP-PC7,clip-image,0.360223579,0.430247628,0.154985341
+PC5,2-38,high,clip_pc8,CLIP-PC8,clip-image,0.202061062,0.424532982,0.085781585
+PC5,2-38,high,concept:ME1_高级_廉价,Premium,clip-text,-0.352248394,-0.115902058,0.040826314
+PC5,2-38,high,concept:ME2_厚重_轻薄,Heavy,clip-text,0.189148168,0.217025804,0.041050033
+PC5,2-38,high,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,0.028346375,0.087817018,0.002489294
+PC5,2-38,high,concept:ME4_精致美观_粗糙难看,Refined,clip-text,-0.788301571,-0.424469856,0.334610254
+PC5,2-38,high,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,0.119108558,0.248056754,0.029545682
+PC5,8—7,low,oh:桌面样式（复杂程度）,Desktop complexity,onehot,0.494218363,-0.134795496,-0.066618409
+PC5,8—7,low,oh:配件多少程度,Accessories,onehot,0.306633532,-0.142133346,-0.04358285
+PC5,8—7,low,oh:是否有收纳,Storage,onehot,0.63620901,-0.093714118,-0.059621766
+PC5,8—7,low,oh:是否有控制面板,Control panel,onehot,-0.560956161,0.005234086,-0.002936093
+PC5,8—7,low,oh:桌腿造型_t1,Leg T/Y,onehot,-0.450884357,0.066672597,-0.030061631
+PC5,8—7,low,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,-0.068660384,0.005592952
+PC5,8—7,low,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,-0.069469395,0.004690738
+PC5,8—7,low,oh:桌腿造型_t4,Leg Rack,onehot,-0.076101943,0.088421218,-0.006729027
+PC5,8—7,low,oh:桌腿造型_t5,Leg Cabinet,onehot,1.309307341,-0.086181602,-0.112838204
+PC5,8—7,low,oh:材质配色_c1,Color Dark wood,onehot,-0.244198746,-0.074858674,0.018280394
+PC5,8—7,low,oh:材质配色_c2,Color Light wood,onehot,0.849836586,-0.133285084,-0.113270541
+PC5,8—7,low,oh:材质配色_c3,Color White,onehot,-0.133630621,-0.060811014,0.008126213
+PC5,8—7,low,oh:材质配色_c4,Color Black/Gray,onehot,-0.137794564,0.235997006,-0.032519104
+PC5,8—7,low,oh:材质配色_c5,Color Mixed material,onehot,-0.058015034,0.017472304,-0.001013656
+PC5,8—7,low,clip_pc1,CLIP-PC1,clip-image,-0.046285036,0.042385977,-0.001961836
+PC5,8—7,low,clip_pc2,CLIP-PC2,clip-image,0.619504578,-0.18704677,-0.115876331
+PC5,8—7,low,clip_pc3,CLIP-PC3,clip-image,0.432558782,0.040830865,0.017661749
+PC5,8—7,low,clip_pc4,CLIP-PC4,clip-image,0.458595736,-0.057785351,-0.026500116
+PC5,8—7,low,clip_pc5,CLIP-PC5,clip-image,0.478301214,0.079819945,0.038177977
+PC5,8—7,low,clip_pc6,CLIP-PC6,clip-image,0.439350515,-0.342150428,-0.150323966
+PC5,8—7,low,clip_pc7,CLIP-PC7,clip-image,-0.446910841,0.430247628,-0.19228233
+PC5,8—7,low,clip_pc8,CLIP-PC8,clip-image,-0.494344617,0.424532982,-0.209865595
+PC5,8—7,low,concept:ME1_高级_廉价,Premium,clip-text,0.432568825,-0.115902058,-0.050135617
+PC5,8—7,low,concept:ME2_厚重_轻薄,Heavy,clip-text,-0.107431768,0.217025804,-0.023315466
+PC5,8—7,low,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,0.50359113,0.087817018,0.044223871
+PC5,8—7,low,concept:ME4_精致美观_粗糙难看,Refined,clip-text,0.188495116,-0.424469856,-0.080010495
+PC5,8—7,low,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,-0.645844802,0.248056754,-0.160206165
+PC6,1—19,high,oh:桌面样式（复杂程度）,Desktop complexity,onehot,-0.421000828,-0.20105394,0.084643875
+PC6,1—19,high,oh:配件多少程度,Accessories,onehot,0.306633532,0.068692136,0.021063312
+PC6,1—19,high,oh:是否有收纳,Storage,onehot,0.63620901,0.091736737,0.058363739
+PC6,1—19,high,oh:是否有控制面板,Control panel,onehot,-0.560956161,-0.126337976,0.070870066
+PC6,1—19,high,oh:桌腿造型_t1,Leg T/Y,onehot,-0.450884357,0.111214642,-0.050144942
+PC6,1—19,high,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,-0.330515856,0.026923232
+PC6,1—19,high,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,0.179576019,-0.012125398
+PC6,1—19,high,oh:桌腿造型_t4,Leg Rack,onehot,0.938590635,0.055505523,0.052096964
+PC6,1—19,high,oh:桌腿造型_t5,Leg Cabinet,onehot,-0.054554473,-0.070802217,0.003862578
+PC6,1—19,high,oh:材质配色_c1,Color Dark wood,onehot,0.292501795,0.157042068,0.045935087
+PC6,1—19,high,oh:材质配色_c2,Color Light wood,onehot,-0.084049772,-0.057691625,0.004848968
+PC6,1—19,high,oh:材质配色_c3,Color White,onehot,-0.133630621,-0.098155496,0.01311658
+PC6,1—19,high,oh:材质配色_c4,Color Black/Gray,onehot,-0.137794564,0.047718598,-0.006575363
+PC6,1—19,high,oh:材质配色_c5,Color Mixed material,onehot,-0.058015034,-0.201954814,0.011716415
+PC6,1—19,high,clip_pc1,CLIP-PC1,clip-image,-0.134768285,-0.146196222,0.019702614
+PC6,1—19,high,clip_pc2,CLIP-PC2,clip-image,0.462111825,0.200254541,0.092539991
+PC6,1—19,high,clip_pc3,CLIP-PC3,clip-image,0.2050026,-0.191349155,-0.039227074
+PC6,1—19,high,clip_pc4,CLIP-PC4,clip-image,0.020369599,0.42441338,0.00864513
+PC6,1—19,high,clip_pc5,CLIP-PC5,clip-image,-0.591821102,-0.25550266,0.151211866
+PC6,1—19,high,clip_pc6,CLIP-PC6,clip-image,1.062778371,0.400210076,0.425334612
+PC6,1—19,high,clip_pc7,CLIP-PC7,clip-image,1.139693174,0.341515542,0.389222932
+PC6,1—19,high,clip_pc8,CLIP-PC8,clip-image,-0.40776415,0.220194687,-0.089787499
+PC6,1—19,high,concept:ME1_高级_廉价,Premium,clip-text,0.370542063,0.112175769,0.041565841
+PC6,1—19,high,concept:ME2_厚重_轻薄,Heavy,clip-text,0.789680526,-0.032770974,-0.0258786
+PC6,1—19,high,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,-0.339661627,-0.021466255,0.007291263
+PC6,1—19,high,concept:ME4_精致美观_粗糙难看,Refined,clip-text,0.556845846,0.040566315,0.022589184
+PC6,1—19,high,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,-0.152724018,-0.057399245,0.008766243
+PC6,5—14,low,oh:桌面样式（复杂程度）,Desktop complexity,onehot,0.265413565,-0.20105394,-0.053362443
+PC6,5—14,low,oh:配件多少程度,Accessories,onehot,-0.006257827,0.068692136,-0.000429864
+PC6,5—14,low,oh:是否有收纳,Storage,onehot,-0.112272178,0.091736737,-0.010299483
+PC6,5—14,low,oh:是否有控制面板,Control panel,onehot,0.127333607,-0.126337976,-0.01608707
+PC6,5—14,low,oh:桌腿造型_t1,Leg T/Y,onehot,-0.450884357,0.111214642,-0.050144942
+PC6,5—14,low,oh:桌腿造型_t2,Leg Gate,onehot,0.876873744,-0.330515856,-0.289820676
+PC6,5—14,low,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,0.179576019,-0.012125398
+PC6,5—14,low,oh:桌腿造型_t4,Leg Rack,onehot,-0.076101943,0.055505523,-0.004224078
+PC6,5—14,low,oh:桌腿造型_t5,Leg Cabinet,onehot,-0.054554473,-0.070802217,0.003862578
+PC6,5—14,low,oh:材质配色_c1,Color Dark wood,onehot,-0.244198746,0.157042068,-0.038349476
+PC6,5—14,low,oh:材质配色_c2,Color Light wood,onehot,0.849836586,-0.057691625,-0.049028454
+PC6,5—14,low,oh:材质配色_c3,Color White,onehot,-0.133630621,-0.098155496,0.01311658
+PC6,5—14,low,oh:材质配色_c4,Color Black/Gray,onehot,-0.137794564,0.047718598,-0.006575363
+PC6,5—14,low,oh:材质配色_c5,Color Mixed material,onehot,-0.058015034,-0.201954814,0.011716415
+PC6,5—14,low,clip_pc1,CLIP-PC1,clip-image,0.089680015,-0.146196222,-0.013110879
+PC6,5—14,low,clip_pc2,CLIP-PC2,clip-image,-0.340688879,0.200254541,-0.068224495
+PC6,5—14,low,clip_pc3,CLIP-PC3,clip-image,-0.170375355,-0.191349155,0.03260118
+PC6,5—14,low,clip_pc4,CLIP-PC4,clip-image,-0.734804699,0.42441338,-0.311860946
+PC6,5—14,low,clip_pc5,CLIP-PC5,clip-image,-0.555128967,-0.25550266,0.141836928
+PC6,5—14,low,clip_pc6,CLIP-PC6,clip-image,-0.3677102,0.400210076,-0.147161327
+PC6,5—14,low,clip_pc7,CLIP-PC7,clip-image,-0.459702846,0.341515542,-0.156995667
+PC6,5—14,low,clip_pc8,CLIP-PC8,clip-image,-0.955494136,0.220194687,-0.210394732
+PC6,5—14,low,concept:ME1_高级_廉价,Premium,clip-text,-0.86705604,0.112175769,-0.097262678
+PC6,5—14,low,concept:ME2_厚重_轻薄,Heavy,clip-text,0.8206375,-0.032770974,-0.02689309
+PC6,5—14,low,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,-0.127004631,-0.021466255,0.002726314
+PC6,5—14,low,concept:ME4_精致美观_粗糙难看,Refined,clip-text,0.369922844,0.040566315,0.015006407
+PC6,5—14,low,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,-0.401407328,-0.057399245,0.023040478
+PC7,7—7,high,oh:桌面样式（复杂程度）,Desktop complexity,onehot,-0.19219603,-0.174336663,0.033506815
+PC7,7—7,high,oh:配件多少程度,Accessories,onehot,-0.006257827,0.229269952,-0.001434732
+PC7,7—7,high,oh:是否有收纳,Storage,onehot,-0.112272178,-0.003422591,0.000384262
+PC7,7—7,high,oh:是否有控制面板,Control panel,onehot,0.127333607,0.052488435,0.006683542
+PC7,7—7,high,oh:桌腿造型_t1,Leg T/Y,onehot,0.158418828,0.035615436,0.005642156
+PC7,7—7,high,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,0.02946466,-0.002400139
+PC7,7—7,high,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,-0.220738057,0.014904757
+PC7,7—7,high,oh:桌腿造型_t4,Leg Rack,onehot,-0.076101943,0.128844695,-0.009805332
+PC7,7—7,high,oh:桌腿造型_t5,Leg Cabinet,onehot,-0.054554473,-0.027319452,0.001490398
+PC7,7—7,high,oh:材质配色_c1,Color Dark wood,onehot,-0.244198746,-0.007791194,0.0019026
+PC7,7—7,high,oh:材质配色_c2,Color Light wood,onehot,0.849836586,0.208151714,0.176894942
+PC7,7—7,high,oh:材质配色_c3,Color White,onehot,-0.133630621,-0.022061492,0.002948091
+PC7,7—7,high,oh:材质配色_c4,Color Black/Gray,onehot,-0.137794564,-0.074347415,0.01024467
+PC7,7—7,high,oh:材质配色_c5,Color Mixed material,onehot,-0.058015034,-0.079991292,0.004640698
+PC7,7—7,high,clip_pc1,CLIP-PC1,clip-image,0.185821106,-0.008441135,-0.001568541
+PC7,7—7,high,clip_pc2,CLIP-PC2,clip-image,0.608852296,0.152872678,0.093076881
+PC7,7—7,high,clip_pc3,CLIP-PC3,clip-image,-0.122112552,0.046385832,-0.005664292
+PC7,7—7,high,clip_pc4,CLIP-PC4,clip-image,0.458505866,0.589595584,0.270333034
+PC7,7—7,high,clip_pc5,CLIP-PC5,clip-image,0.38018699,0.17310539,0.065812417
+PC7,7—7,high,clip_pc6,CLIP-PC6,clip-image,-0.481929043,-0.42783907,0.206188074
+PC7,7—7,high,clip_pc7,CLIP-PC7,clip-image,0.20100366,0.082109493,0.016504309
+PC7,7—7,high,clip_pc8,CLIP-PC8,clip-image,-0.453265619,-0.399134021,0.180913729
+PC7,7—7,high,concept:ME1_高级_廉价,Premium,clip-text,-0.442705474,0.039138064,-0.017326635
+PC7,7—7,high,concept:ME2_厚重_轻薄,Heavy,clip-text,0.199907864,0.10474543,0.020939435
+PC7,7—7,high,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,1.057326129,0.143299935,0.151514765
+PC7,7—7,high,concept:ME4_精致美观_粗糙难看,Refined,clip-text,0.482727489,-0.028599015,-0.013805531
+PC7,7—7,high,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,-0.245100548,0.064277478,-0.015754445
+PC7,4—1,low,oh:桌面样式（复杂程度）,Desktop complexity,onehot,0.265413565,-0.174336663,-0.046271315
+PC7,4—1,low,oh:配件多少程度,Accessories,onehot,-0.319149186,0.229269952,-0.073171319
+PC7,4—1,low,oh:是否有收纳,Storage,onehot,-0.112272178,-0.003422591,0.000384262
+PC7,4—1,low,oh:是否有控制面板,Control panel,onehot,0.127333607,0.052488435,0.006683542
+PC7,4—1,low,oh:桌腿造型_t1,Leg T/Y,onehot,0.158418828,0.035615436,0.005642156
+PC7,4—1,low,oh:桌腿造型_t2,Leg Gate,onehot,-0.081458217,0.02946466,-0.002400139
+PC7,4—1,low,oh:桌腿造型_t3,Leg Single/Fold,onehot,-0.06752237,-0.220738057,0.014904757
+PC7,4—1,low,oh:桌腿造型_t4,Leg Rack,onehot,-0.076101943,0.128844695,-0.009805332
+PC7,4—1,low,oh:桌腿造型_t5,Leg Cabinet,onehot,-0.054554473,-0.027319452,0.001490398
+PC7,4—1,low,oh:材质配色_c1,Color Dark wood,onehot,0.292501795,-0.007791194,-0.002278938
+PC7,4—1,low,oh:材质配色_c2,Color Light wood,onehot,-0.084049772,0.208151714,-0.017495104
+PC7,4—1,low,oh:材质配色_c3,Color White,onehot,-0.133630621,-0.022061492,0.002948091
+PC7,4—1,low,oh:材质配色_c4,Color Black/Gray,onehot,-0.137794564,-0.074347415,0.01024467
+PC7,4—1,low,oh:材质配色_c5,Color Mixed material,onehot,-0.058015034,-0.079991292,0.004640698
+PC7,4—1,low,clip_pc1,CLIP-PC1,clip-image,-0.184177864,-0.008441135,0.00155467
+PC7,4—1,low,clip_pc2,CLIP-PC2,clip-image,-0.164199981,0.152872678,-0.025101691
+PC7,4—1,low,clip_pc3,CLIP-PC3,clip-image,0.140716252,0.046385832,0.00652724
+PC7,4—1,low,clip_pc4,CLIP-PC4,clip-image,-1.095726128,0.589595584,-0.646035286
+PC7,4—1,low,clip_pc5,CLIP-PC5,clip-image,-0.454387852,0.17310539,-0.078656986
+PC7,4—1,low,clip_pc6,CLIP-PC6,clip-image,-0.432417673,-0.42783907,0.185005175
+PC7,4—1,low,clip_pc7,CLIP-PC7,clip-image,-0.522278894,0.082109493,-0.042884055
+PC7,4—1,low,clip_pc8,CLIP-PC8,clip-image,0.387229922,-0.399134021,-0.154556636
+PC7,4—1,low,concept:ME1_高级_廉价,Premium,clip-text,-0.772236019,0.039138064,-0.030223823
+PC7,4—1,low,concept:ME2_厚重_轻薄,Heavy,clip-text,0.137694295,0.10474543,0.014422848
+PC7,4—1,low,concept:ME3_简约大气_复杂凌乱,Minimalist,clip-text,0.06880038,0.143299935,0.00985909
+PC7,4—1,low,concept:ME4_精致美观_粗糙难看,Refined,clip-text,0.153132642,-0.028599015,-0.004379443
+PC7,4—1,low,concept:ME5_时尚科技_传统老气,Tech-modern,clip-text,-0.784471203,0.064277478,-0.05042383

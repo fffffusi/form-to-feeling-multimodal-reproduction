@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Private or large raw inputs
+data/input/
+data/images_1024/
+models/
+
+# Generated intermediate outputs
+data/extraction/
+data/interim/
+data/satisfaction/
+data/processed/
+stata/output/
+
+# Runtime metadata and checkpoints
+*_metadata.json
+checkpoint_*.csv
+clip_image_checkpoints/
+
+# Local notebooks / temporary files
+*.ipynb_checkpoints/
+*.tmp
+~$*
