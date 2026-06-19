@@ -1,4 +1,4 @@
-# From Form to Feeling: Public Reproduction Materials
+# Product visual form and customer satisfaction: multimodal evidence on affective premium and functional diagnosis
 
 This repository contains the public reproduction materials for the paper
 **From Form to Feeling: Multimodal Evidence on How Product Appearance Shapes
