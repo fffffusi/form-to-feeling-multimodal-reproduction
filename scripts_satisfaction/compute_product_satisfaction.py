@@ -81,7 +81,7 @@ def main():
     print(f"\n[1/4] 加载 {SENTIMENT_CSV.name}")
     if not SENTIMENT_CSV.exists():
         raise FileNotFoundError(
-            f"未找到 {SENTIMENT_CSV},请先运行 02_llm_sentiment_scoring.py"
+            f"未找到 {SENTIMENT_CSV},请先运行 llm_sentiment_scoring.py"
         )
     sent = pd.read_csv(SENTIMENT_CSV)
     sent["sentiment_score"] = pd.to_numeric(sent["sentiment_score"], errors="coerce")

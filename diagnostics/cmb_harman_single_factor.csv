@@ -1,0 +1,2 @@
+﻿test,variables,n_products,first_unrotated_factor_variance_pct,threshold_pct,interpretation
+Harman single-factor test,"me1_z, me2_z, me3_z, me4_z, me5_z, mf1_z, mf2_z, mf3_z, mf4_z, mf5_z, mf6_z, mf7_z, sentiment_z",200,39.7186258097838,50.0,Below 50%; common method variance is unlikely to be the sole driver.
