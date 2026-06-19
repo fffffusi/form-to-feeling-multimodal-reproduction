@@ -1,4 +1,4 @@
-# From Form to Feeling: Public Reproduction Materials
+# Product visual form and customer satisfaction: multimodal evidence on affective premium and functional diagnosis
 
 This repository contains the public reproduction materials for the paper
 **From Form to Feeling: Multimodal Evidence on How Product Appearance Shapes
@@ -44,7 +44,8 @@ regression tables of the paper.
 │   └── fig7(b)_product_feature_contributions.csv # 27 x 7 fused-PCA loading matrix
 ├── scripts_stata_prep/
 │   ├── prepare_stata_data.py
-│   └── fdr_correction.py
+│   ├── fdr_correction.py
+│   └── common_method_and_diagnostic_checks.py
 └── stata/
     ├── main_analysis.do
     └── main_analysis.log
@@ -146,6 +147,25 @@ files may contain local paths and timestamps; do not commit generated
 metadata, checkpoints, raw comments, or raw images if those contain
 restricted information.
 
+## Supplementary Diagnostics
+
+To reproduce the auxiliary common-method and functional-diagnostic checks, run:
+
+```bash
+python scripts_stata_prep/common_method_and_diagnostic_checks.py
+```
+
+The Harman single-factor test runs directly from
+`data_anonymized/product_master.csv`. The functional-polarity diagnostics require
+review-level functional extraction output generated from user-supplied reviews:
+
+```text
+data/extraction/llm_function_extractions.csv
+```
+
+When this review-level file is not present, the script reports the Harman test
+and skips the polarity diagnostics with an explanatory message.
+
 ### Fused-PCA reduction
 
 Between the visual encoding step (`encode_clip_text.py`) and the Stata
@@ -206,6 +226,17 @@ Y_70_30          = 0.7 * sentiment_z + 0.3 * favrate_z
 
 `sentiment_z` is the z-score of product-level mean LLM sentiment. `favrate_z`
 is the z-score of the logit-transformed platform favorable rate.
+
+### Supplementary diagnostics
+
+`scripts_stata_prep/common_method_and_diagnostic_checks.py` produces auxiliary
+diagnostic outputs for the manuscript:
+
+```text
+diagnostics/cmb_harman_single_factor.csv
+diagnostics/mf_polarity_diagnostics.csv      # requires review-level functional extraction output
+diagnostics/mf_polarity_regressions.csv      # requires review-level functional extraction output
+```
 
 ### Visual encoding
 
