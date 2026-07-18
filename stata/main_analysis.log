@@ -1,101 +1,127 @@
-﻿*==============================================================================
-. * Part 0. 加载 + 标准化所有关键变量
-. *==============================================================================
-. use "data_anonymized/product_master.dta", clear
-
-. display "样本数: " _N
-样本数: 200
+------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  .\stata/output/main_analysis.log
+  log type:  text
+ opened on:  13 Jul 2026, 01:20:31
 
 . 
-. * 控制变量
-. gen lnprice = ln(price + 1)
+. 
+. *==============================================================================
+. * Part 0. 加载 + 标准化
+. *==============================================================================
+. use "data/processed/product_master.dta", clear
+
+. display "Loaded product_master.dta. N = " _N
+Loaded product_master.dta. N = 200
+
+. 
+. * 控制变量 (ln transforms)
+. capture drop lnprice lnreviews
+
+. gen lnprice   = ln(price + 1)
 
 . gen lnreviews = ln(n_reviews_total + 1)
 
 . 
 . * 主分析样本标志
+. capture drop included_main
+
 . gen included_main = (n_reviews_total >= 20)
 
 . 
-. * z-score 标准化(关键:让回归系数变成标准化 β,直接可比)
+. * z-score 标准化所有变量
 . foreach v in y_50_50 y_30_70 y_70_30 y_sentiment_only y_favrate_only ///
 >              m_e_avg m_f_avg ///
 >              z_pc1 z_pc2 z_pc3 z_pc4 z_pc5 z_pc6 z_pc7 ///
 >              me1_z me2_z me3_z me4_z me5_z ///
 >              mf1_z mf2_z mf3_z mf4_z mf5_z mf6_z mf7_z ///
->              lnprice lnreviews {
+>              lnprice lnreviews ///
+>              has_discount free_shipping ///
+>              ln_imperfection ln_brand_avg_price recency_inv {
   2.     capture confirm variable `v'
   3.     if !_rc {
-  4.         egen `v'_s = std(`v')
-  5.     }
-  6. }
+  4.         capture drop `v'_s
+  5.         egen `v'_s = std(`v')
+  6.     }
+  7. }
 
 . 
 . * 变量标签
-. label var y_50_50_s             "Y (50:50)"
+. label var y_50_50_s              "Y satisfaction (50:50)"
 
-. label var y_30_70_s             "Y (30:70)"
+. label var y_30_70_s              "Y satisfaction (30:70)"
 
-. label var y_70_30_s             "Y (70:30)"
+. label var y_70_30_s              "Y satisfaction (70:30)"
 
-. label var y_sentiment_only_s    "Y (sentiment only)"
+. label var y_sentiment_only_s     "Y sentiment only"
 
-. label var y_favrate_only_s      "Y (favrate only)"
+. label var y_favrate_only_s       "Y favorable-rate only (PRIMARY)"
 
-. label var m_e_avg_s             "M_E (Kansei)"
+. label var m_e_avg_s              "M_E Kansei evaluation"
 
-. label var m_f_avg_s             "M_F (Function)"
+. label var m_f_avg_s              "M_F functional evaluation"
 
 . label var z_pc1_s "PC1 Minimalist Lightness"
 
 . label var z_pc2_s "PC2 Refined Tech-Modern"
 
-. label var z_pc3_s "PC3 Non-Lifting Premium"
+. label var z_pc3_s "PC3 Non-standard Premium Form"
 
 . label var z_pc4_s "PC4 Heavy Rack Architecture"
 
 . label var z_pc5_s "PC5 Dark Rough Texture"
 
-. label var z_pc6_s "PC6 Leg-Style Variation"
+. label var z_pc6_s "PC6 Leg-form Variation"
 
-. label var z_pc7_s "PC7 Light-Wood Accessory"
+. label var z_pc7_s "PC7 Light-Wood Accessory Cues"
 
-. label var lnprice_s "ln(Price)"
+. label var lnprice_s              "ln(Price)"
 
-. label var lnreviews_s "ln(N_reviews)"
+. label var lnreviews_s            "ln(N reviews)"
+
+. label var has_discount_s         "Has discount (1=yes)"
+
+. label var free_shipping_s        "Free shipping (1=yes)"
+
+. label var ln_imperfection_s      "ln(Reputation gap)"
+
+. label var ln_brand_avg_price_s   "ln(Brand avg price)"
+
+. label var recency_inv_s          "Review recency (inverse)"
 
 . 
+. capture drop id
+
 . egen id = group(product_id)
 
 . 
-. save "data_anonymized/product_master.dta", replace
-file data_anonymized/product_master.dta saved
-
-. 
-end of do-file
-
-. do "<LOCAL_TEMP_DO_FILE>"
+. save "data/processed/product_master.dta", replace
+file data/processed/product_master.dta saved
 
 . 
 . 
 . *==============================================================================
-. * Part 1. 描述统计 + 相关 + VIF (修复版)
+. * Part 1. 描述统计 + 相关矩阵 + VIF
 . *==============================================================================
-. use "data_anonymized/product_master.dta", clear
+. use "data/processed/product_master.dta", clear
 
 . 
-. ** 1.1 描述统计 (用原始变量,展示真实尺度)
-. estpost tabstat y_50_50 m_e_avg m_f_avg ///
+. ** 1.1 描述统计
+. estpost tabstat y_favrate_only y_50_50 y_sentiment_only m_e_avg m_f_avg ///
 >     z_pc1 z_pc2 z_pc3 z_pc4 z_pc5 z_pc6 z_pc7 ///
->     lnprice lnreviews, ///
+>     price n_reviews_total has_discount free_shipping ///
+>     ln_imperfection ln_brand_avg_price recency_inv, ///
 >     stats(N mean sd min p50 max) columns(statistics)
 
 Summary statistics: count mean sd min p50 max
-     for variables: y_50_50 m_e_avg m_f_avg z_pc1 z_pc2 z_pc3 z_pc4 z_pc5 z_pc6 z_pc7 lnprice lnreviews
+     for variables: y_favrate_only y_50_50 y_sentiment_only m_e_avg m_f_avg z_pc1 z_pc2 z_pc3 z_pc4 z_pc5 z_pc6 z_pc7 price n_review
+> s_total has_discount free_shipping ln_imperfection ln_brand_avg_price recency_inv
 
              |  e(count)    e(mean)      e(sd)     e(min)     e(p50)     e(max) 
 -------------+------------------------------------------------------------------
+y_favrate_~y |       200  -1.50e-11   1.002509   -2.12059  -.4030351    1.08911 
      y_50_50 |       200  -1.00e-11   .8682147  -4.020129  -.0070837   1.031742 
+y_sentimen~y |       200   1.00e-11   1.002509  -6.543645   .2420673    .974373 
      m_e_avg |       200   4.00e-11   .7467313  -2.088761  -.0309625   3.563842 
      m_f_avg |       200  -1.00e-11   .7159976  -1.882477   .0764872   1.647466 
        z_pc1 |       200   2.50e-11   .7547481  -2.069031   -.091125   1.530304 
@@ -105,24 +131,53 @@ Summary statistics: count mean sd min p50 max
        z_pc5 |       200  -1.00e-11   .4560233  -1.342878   .0128011   1.027442 
        z_pc6 |       200  -5.00e-12   .4133795  -1.318471   -.001113   1.336583 
        z_pc7 |       200  -1.50e-11   .3832814  -.9193593   .0391135   1.196787 
-     lnprice |       200   7.063153   .9509882   4.077538    7.11791   9.034677 
-   lnreviews |       200   4.812644   1.206182   1.098612   4.855921   6.903747 
+       price |       200    1723.92   1547.841         58       1233       8388 
+n_reviews_~l |       200    209.755   204.1247          2      127.5        995 
+has_discount |       200        .74    .439735          0          1          1 
+free_shipp~g |       200        .71   .4549007          0          1          1 
+ln_imperfe~n |       200  -2.218527   2.037608   -4.60517  -1.560648   .9202828 
+ln_brand_a~e |       200    7.17543   .8232795   4.077537   7.372786   8.816853 
+ recency_inv |       200   .0492857    .144054   .0009901   .0021209          1 
 
 . esttab using "stata/output/T1_descriptive.rtf", replace ///
 >     cells("count(fmt(0)) mean(fmt(3)) sd(fmt(3)) min(fmt(3)) p50(fmt(3)) max(fmt(3))") ///
 >     nonumber nomtitle nonote label ///
->     title("Table 1. Descriptive Statistics (N=200, raw scale)")
+>     title("Table 1. Descriptive Statistics (N=200, primary Y = favorable-rate only)")
 (output written to stata/output/T1_descriptive.rtf)
 
 . 
-. ** 1.2 相关矩阵 (用标准化变量)
-. estpost correlate y_50_50_s m_e_avg_s m_f_avg_s ///
->     z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s, matrix
+. ** 1.2 相关矩阵 (主Y = y_favrate_only_s)
+. estpost correlate y_favrate_only_s y_50_50_s y_sentiment_only_s ///
+>     m_e_avg_s m_f_avg_s ///
+>     z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s ///
+>     lnprice_s lnreviews_s has_discount_s free_shipping_s ///
+>     ln_imperfection_s ln_brand_avg_price_s recency_inv_s, matrix
 
              |      e(b)     e(rho)       e(p)   e(count) 
 -------------+--------------------------------------------
+y_favrate_~s |                                            
+y_favrate_~s |         1          1                   200 
+   y_50_50_s |  .8660415   .8660415   1.61e-61        200 
+y_sentimen~s |  .5000556   .5000556   4.74e-14        200 
+   m_e_avg_s |  .0489601   .0489601   .4911547        200 
+   m_f_avg_s | -.1377239  -.1377239   .0518016        200 
+     z_pc1_s | -.1969618  -.1969618    .005183        200 
+     z_pc2_s |  -.234795   -.234795   .0008181        200 
+     z_pc3_s | -.1104962  -.1104962   .1193208        200 
+     z_pc4_s | -.2114996  -.2114996   .0026437        200 
+     z_pc5_s | -.0514037  -.0514037   .4697536        200 
+     z_pc6_s | -.0546779  -.0546779   .4418989        200 
+     z_pc7_s |  .1209005   .1209005   .0881319        200 
+   lnprice_s |  .2334829   .2334829   .0008767        200 
+ lnreviews_s | -.2222558  -.2222558   .0015608        200 
+has_discou~s | -.0261912  -.0261912   .7127684        200 
+free_shipp~s |   .244962    .244962   .0004723        200 
+ln_imperfe~s |  .0526082   .0526082   .4593962        200 
+ln_brand_a~s |   .154845    .154845   .0285725        200 
+recency_in~s | -.1620802  -.1620802   .0218494        200 
 y_50_50_s    |                                            
    y_50_50_s |         1          1                   200 
+y_sentimen~s |  .8660415   .8660415   1.61e-61        200 
    m_e_avg_s |  .1966146   .1966146   .0052641        200 
    m_f_avg_s |  .0327829   .0327829    .644915        200 
      z_pc1_s | -.2698824  -.2698824   .0001112        200 
@@ -132,6 +187,31 @@ y_50_50_s    |
      z_pc5_s | -.1454267  -.1454267    .039909        200 
      z_pc6_s | -.0578511  -.0578511   .4158215        200 
      z_pc7_s |  .0847358   .0847358   .2328767        200 
+   lnprice_s |  .2641924   .2641924   .0001567        200 
+ lnreviews_s |  .0223939   .0223939   .7529499        200 
+has_discou~s | -.0406236  -.0406236   .5679053        200 
+free_shipp~s |  .1884147   .1884147   .0075433        200 
+ln_imperfe~s |  .0582307   .0582307   .4127638        200 
+ln_brand_a~s |   .223609    .223609   .0014581        200 
+recency_in~s | -.1300793  -.1300793   .0663759        200 
+y_sentimen~s |                                            
+y_sentimen~s |         1          1                   200 
+   m_e_avg_s |  .2915926   .2915926    .000028        200 
+   m_f_avg_s |  .1945065   .1945065   .0057818        200 
+     z_pc1_s | -.2704969  -.2704969   .0001071        200 
+     z_pc2_s | -.1504038  -.1504038   .0335194        200 
+     z_pc3_s | -.0883331  -.0883331   .2135654        200 
+     z_pc4_s | -.1277291  -.1277291   .0714778        200 
+     z_pc5_s | -.2004875  -.2004875   .0044202        200 
+     z_pc6_s |  -.045525   -.045525    .522096        200 
+     z_pc7_s |   .025869    .025869   .7161488        200 
+   lnprice_s |  .2241201   .2241201    .001421        200 
+ lnreviews_s |  .2610439   .2610439   .0001888        200 
+has_discou~s | -.0441723  -.0441723   .5345484        200 
+free_shipp~s |  .0813879   .0813879    .251925        200 
+ln_imperfe~s |  .0482522   .0482522   .4974504        200 
+ln_brand_a~s |  .2324643   .2324643   .0009249        200 
+recency_in~s | -.0632279  -.0632279   .3737542        200 
 m_e_avg_s    |                                            
    m_e_avg_s |         1          1                   200 
    m_f_avg_s |  .5420893   .5420893   1.13e-16        200 
@@ -142,6 +222,13 @@ m_e_avg_s    |
      z_pc5_s | -.0709524  -.0709524    .318091        200 
      z_pc6_s |  -.038128   -.038128   .5919399        200 
      z_pc7_s |   .065276    .065276   .3584435        200 
+   lnprice_s |   .140124    .140124   .0478152        200 
+ lnreviews_s |  .2197731   .2197731   .0017666        200 
+has_discou~s | -.0100097  -.0100097   .8881269        200 
+free_shipp~s |  -.093709   -.093709   .1868869        200 
+ln_imperfe~s | -.0999703  -.0999703   .1589943        200 
+ln_brand_a~s |  .1226786   .1226786    .083522        200 
+recency_in~s |  .0234404   .0234404   .7418039        200 
 m_f_avg_s    |                                            
    m_f_avg_s |         1          1                   200 
      z_pc1_s |  .0127763   .0127763    .857499        200 
@@ -151,6 +238,13 @@ m_f_avg_s    |
      z_pc5_s |  -.009304   -.009304   .8959683        200 
      z_pc6_s |  .0703253   .0703253   .3223983        200 
      z_pc7_s | -.0046378  -.0046378   .9480323        200 
+   lnprice_s |  .1665246   .1665246   .0184366        200 
+ lnreviews_s |  .3113462   .3113462   7.20e-06        200 
+has_discou~s |  .0457545   .0457545   .5199982        200 
+free_shipp~s | -.1706292  -.1706292   .0157059        200 
+ln_imperfe~s | -.3238282  -.3238282   2.90e-06        200 
+ln_brand_a~s |  .2062294   .2062294   .0033918        200 
+recency_in~s |  .1715819   .1715819   .0151251        200 
 z_pc1_s      |                                            
      z_pc1_s |         1          1                   200 
      z_pc2_s |         0          0          1        200 
@@ -159,6 +253,13 @@ z_pc1_s      |
      z_pc5_s |         0          0          1        200 
      z_pc6_s |         0          0          1        200 
      z_pc7_s |         0          0          1        200 
+   lnprice_s | -.4340215  -.4340215   1.36e-10        200 
+ lnreviews_s | -.0165086  -.0165086   .8165228        200 
+has_discou~s |  -.192584   -.192584   .0062932        200 
+free_shipp~s | -.1946221  -.1946221   .0057523        200 
+ln_imperfe~s |  .0100945   .0100945   .8871855        200 
+ln_brand_a~s | -.3711254  -.3711254   6.30e-08        200 
+recency_in~s | -.0382322  -.0382322   .5909276        200 
 z_pc2_s      |                                            
      z_pc2_s |         1          1                   200 
      z_pc3_s |  1.83e-08   1.83e-08   .9999998        200 
@@ -166,248 +267,578 @@ z_pc2_s      |
      z_pc5_s |  2.11e-08   2.11e-08   .9999998        200 
      z_pc6_s | -2.11e-08  -2.11e-08   .9999998        200 
      z_pc7_s |  1.83e-08   1.83e-08   .9999998        200 
+   lnprice_s | -.2955481  -.2955481   .0000215        200 
+ lnreviews_s |  .0724991   .0724991   .3076292        200 
+has_discou~s |  .0289431   .0289431    .684128        200 
+free_shipp~s |  .0079567   .0079567    .910965        200 
+ln_imperfe~s |  .0276813   .0276813    .697207        200 
+ln_brand_a~s | -.2568811  -.2568811   .0002408        200 
+recency_in~s |  .0161952   .0161952   .8199459        200 
 z_pc3_s      |                                            
      z_pc3_s |         1          1                   200 
      z_pc4_s | -1.05e-08  -1.05e-08   .9999999        200 
      z_pc5_s |  1.05e-08   1.05e-08   .9999999        200 
      z_pc6_s |  1.05e-08   1.05e-08   .9999999        200 
      z_pc7_s |  1.05e-08   1.05e-08   .9999999        200 
+   lnprice_s | -.1653018  -.1653018    .019326        200 
+ lnreviews_s | -.0778985  -.0778985   .2728981        200 
+has_discou~s | -.2261694  -.2261694   .0012806        200 
+free_shipp~s | -.0554193  -.0554193   .4357241        200 
+ln_imperfe~s |  .1170219   .1170219   .0988936        200 
+ln_brand_a~s | -.1728916  -.1728916   .0143574        200 
+recency_in~s |  .0040461   .0040461    .954655        200 
 z_pc4_s      |                                            
      z_pc4_s |         1          1                   200 
      z_pc5_s |         0          0          1        200 
      z_pc6_s |         0          0          1        200 
      z_pc7_s |         0          0          1        200 
+   lnprice_s | -.3379148  -.3379148   9.90e-07        200 
+ lnreviews_s |  .2634767   .2634767   .0001635        200 
+has_discou~s | -.1653272  -.1653272   .0193071        200 
+free_shipp~s | -.0007938  -.0007938   .9910991        200 
+ln_imperfe~s |  .0209408   .0209408   .7685105        200 
+ln_brand_a~s | -.3410833  -.3410833   7.72e-07        200 
+recency_in~s |  .0271103   .0271103   .7031552        200 
 z_pc5_s      |                                            
      z_pc5_s |         1          1                   200 
      z_pc6_s |         0          0          1        200 
      z_pc7_s |         0          0          1        200 
+   lnprice_s | -.0517692  -.0517692    .466597        200 
+ lnreviews_s | -.0078757  -.0078757   .9118681        200 
+has_discou~s |  .0450326   .0450326   .5266122        200 
+free_shipp~s | -.1170125  -.1170125    .098921        200 
+ln_imperfe~s | -.0726619  -.0726619   .3065413        200 
+ln_brand_a~s | -.0464726  -.0464726   .5134626        200 
+recency_in~s |  .0997758   .0997758   .1598107        200 
 z_pc6_s      |                                            
      z_pc6_s |         1          1                   200 
      z_pc7_s | -1.05e-08  -1.05e-08   .9999999        200 
+   lnprice_s | -.3537987  -.3537987   2.76e-07        200 
+ lnreviews_s |  .1311746   .1311746   .0641021        200 
+has_discou~s |  -.113509   -.113509   .1095154        200 
+free_shipp~s |  .0167012   .0167012   .8144207        200 
+ln_imperfe~s |  .0948326   .0948326   .1816336        200 
+ln_brand_a~s |  -.275108   -.275108   .0000806        200 
+recency_in~s | -.0667471  -.0667471   .3476911        200 
 z_pc7_s      |                                            
      z_pc7_s |         1          1                   200 
+   lnprice_s | -.0270006  -.0270006   .7043001        200 
+ lnreviews_s |  .0064362   .0064362   .9279277        200 
+has_discou~s | -.1311236  -.1311236   .0642066        200 
+free_shipp~s |  .0502657   .0502657   .4796564        200 
+ln_imperfe~s |  .1403031   .1403031   .0475283        200 
+ln_brand_a~s | -.0422686  -.0422686   .5523206        200 
+recency_in~s |  .0755216   .0755216    .287845        200 
+lnprice_s    |                                            
+   lnprice_s |         1          1                   200 
+ lnreviews_s | -.1630056  -.1630056    .021097        200 
+has_discou~s |  .2348765   .2348765   .0008146        200 
+free_shipp~s | -.0053381  -.0053381   .9401994        200 
+ln_imperfe~s | -.2738986  -.2738986   .0000869        200 
+ln_brand_a~s |  .8398096   .8398096   1.99e-54        200 
+recency_in~s |  .1377857   .1377857   .0516956        200 
+lnreviews_s  |                                            
+ lnreviews_s |         1          1                   200 
+has_discou~s |  .0585619   .0585619   .4101067        200 
+free_shipp~s | -.0462059  -.0462059   .5158855        200 
+ln_imperfe~s | -.1294601  -.1294601   .0676904        200 
+ln_brand_a~s | -.1124027  -.1124027     .11304        200 
+recency_in~s |  .1991279   .1991279   .0047015        200 
+has_discou~s |                                            
+has_discou~s |         1          1                   200 
+free_shipp~s | -.0271308  -.0271308   .7029413        200 
+ln_imperfe~s | -.1930647  -.1930647   .0061617        200 
+ln_brand_a~s |  .2198347   .2198347   .0017612        200 
+recency_in~s |  .1162057   .1162057   .1012858        200 
+free_shipp~s |                                            
+free_shipp~s |         1          1                   200 
+ln_imperfe~s |  .2355798   .2355798   .0007848        200 
+ln_brand_a~s |  .0274324   .0274324   .6997976        200 
+recency_in~s | -.1838655  -.1838655    .009155        200 
+ln_imperfe~s |                                            
+ln_imperfe~s |         1          1                   200 
+ln_brand_a~s | -.2684744  -.2684744   .0001211        200 
+recency_in~s | -.1920909  -.1920909   .0064307        200 
+ln_brand_a~s |                                            
+ln_brand_a~s |         1          1                   200 
+recency_in~s |  .1484158   .1484158   .0359591        200 
+recency_in~s |                                            
+recency_in~s |         1          1                   200 
 
 . esttab using "stata/output/T1B_correlations.rtf", replace ///
 >     unstack not noobs nonumber compress label ///
->     title("Table 1B. Pearson Correlations") b(%6.3f)
+>     title("Table 1B. Pearson Correlations (standardized; Y = favorable-rate only)") b(%6.3f)
 (output written to stata/output/T1B_correlations.rtf)
 
 . 
-. ** 1.3 VIF
-. reg y_50_50_s z_pc1_s-z_pc7_s m_e_avg_s m_f_avg_s lnprice_s lnreviews_s
+. ** 1.3 VIF 多重共线性诊断 (3 个关键规格 + 导出)
+. *    阈值: VIF < 5 良好, 5-10 可接受, > 10 严重共线性需处理
+. *    检查规格:
+. *      (a) 仅控制变量 — 检查新增控制变量之间是否共线
+. *      (b) 全中介模型 (PCs + ME + MF + 控制变量) — 主回归的共线性
+. *      (c) 维度分解 (7 PCs + 12 mediators + 控制变量) — 共线性最严重的规格
+. 
+. display ""
+
+
+. display "========================================"
+========================================
+
+. display "  VIF Diagnostics (Y = favorable-rate only)"
+  VIF Diagnostics (Y = favorable-rate only)
+
+. display "========================================"
+========================================
+
+. 
+. * --- 导出 VIF 结果到 CSV ---
+. capture file close vif_fh
+
+. file open vif_fh using "stata/output/VIF_diagnostics.csv", write replace
+
+. file write vif_fh "spec,variable,vif,1/vif,flag" _n
+
+. 
+. * --- (a) 仅 7 个控制变量 ---
+. display ""
+
+
+. display "--- Spec (a): Controls only ---"
+--- Spec (a): Controls only ---
+
+. reg y_favrate_only_s lnprice_s lnreviews_s has_discount_s free_shipping_s ///
+>     ln_imperfection_s ln_brand_avg_price_s recency_inv_s
 
       Source |       SS           df       MS      Number of obs   =       200
--------------+----------------------------------   F(11, 188)      =      6.18
-       Model |  52.8374048        11  4.80340043   Prob > F        =    0.0000
-    Residual |  146.162595       188  .777460612   R-squared       =    0.2655
--------------+----------------------------------   Adj R-squared   =    0.2225
-       Total |         199       199  .999999999   Root MSE        =    .88174
+-------------+----------------------------------   F(7, 192)       =      5.53
+       Model |  33.3829744         7  4.76899635   Prob > F        =    0.0000
+    Residual |  165.617031       192  .862588701   R-squared       =    0.1678
+-------------+----------------------------------   Adj R-squared   =    0.1374
+       Total |  199.000005       199  1.00000003   Root MSE        =    .92876
 
-------------------------------------------------------------------------------
-   y_50_50_s | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |  -.2679276   .0753957    -3.55   0.000    -.4166579   -.1191972
-     z_pc2_s |  -.2646862    .068557    -3.86   0.000    -.3999259   -.1294464
-     z_pc3_s |  -.2133794   .0698564    -3.05   0.003    -.3511825   -.0755764
-     z_pc4_s |  -.2468789      .0718    -3.44   0.001    -.3885161   -.1052418
-     z_pc5_s |   -.129639   .0628952    -2.06   0.041      -.25371   -.0055681
-     z_pc6_s |  -.0697202   .0717266    -0.97   0.332    -.2112127    .0717722
-     z_pc7_s |    .062103   .0628172     0.99   0.324    -.0618141    .1860201
-   m_e_avg_s |   .2943022   .0822464     3.58   0.000     .1320577    .4565466
-   m_f_avg_s |  -.1932442   .0826677    -2.34   0.020    -.3563197   -.0301686
-   lnprice_s |  -.0753045   .0955529    -0.79   0.432    -.2637981    .1131892
- lnreviews_s |   .0765211   .0706526     1.08   0.280    -.0628527     .215895
-       _cons |  -1.64e-09   .0623482    -0.00   1.000     -.122992     .122992
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+    y_favrate_only_s | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+           lnprice_s |   .3546544   .1237604     2.87   0.005     .1105498     .598759
+         lnreviews_s |   -.142047   .0695174    -2.04   0.042     -.279163   -.0049311
+      has_discount_s |  -.0501894   .0687174    -0.73   0.466    -.1857274    .0853486
+     free_shipping_s |   .2186603   .0689764     3.17   0.002     .0826116    .3547091
+   ln_imperfection_s |   .0122957   .0726761     0.17   0.866    -.1310505    .1556418
+ln_brand_avg_price_s |  -.1336447   .1223011    -1.09   0.276     -.374871    .1075816
+       recency_inv_s |  -.1144278   .0698404    -1.64   0.103    -.2521807    .0233252
+               _cons |   1.85e-08    .065673     0.00   1.000    -.1295332    .1295332
+--------------------------------------------------------------------------------------
 
 . estat vif
 
     Variable |       VIF       1/VIF  
 -------------+----------------------
-   lnprice_s |      2.34    0.427895
-   m_f_avg_s |      1.75    0.571680
-   m_e_avg_s |      1.73    0.577552
-     z_pc1_s |      1.46    0.687277
-     z_pc4_s |      1.32    0.757838
-     z_pc6_s |      1.32    0.759390
- lnreviews_s |      1.28    0.782651
-     z_pc3_s |      1.25    0.800596
-     z_pc2_s |      1.20    0.831232
-     z_pc5_s |      1.01    0.987622
-     z_pc7_s |      1.01    0.990076
+   lnprice_s |      3.53    0.283001
+ln_brand_a~s |      3.45    0.289794
+ln_imperfe~s |      1.22    0.820667
+recency_in~s |      1.13    0.888664
+ lnreviews_s |      1.11    0.896940
+free_shipp~s |      1.10    0.911067
+has_discou~s |      1.09    0.917946
 -------------+----------------------
-    Mean VIF |      1.42
+    Mean VIF |      1.80
+
+. * 捕获 VIF 矩阵写入 CSV
+. matrix VA = r(table)
+
+. * estat vif 不直接返回简洁矩阵, 用循环逐变量计算并写文件
+. foreach v in lnprice_s lnreviews_s has_discount_s free_shipping_s ///
+>              ln_imperfection_s ln_brand_avg_price_s recency_inv_s {
+  2.     capture drop _vif_tmp
+  3.     quietly reg `v' lnprice_s lnreviews_s has_discount_s free_shipping_s ///
+>         ln_imperfection_s ln_brand_avg_price_s recency_inv_s
+  4.     scalar _vif_val = 1 / (1 - e(r2))
+  5.     scalar _vif_inv = 1 - e(r2)
+  6.     local _flag = ""
+  7.     if _vif_val >= 10 local _flag = "SEVERE(>=10)"
+  8.     else if _vif_val >= 5 local _flag = "elevated(5-10)"
+  9.     file write vif_fh "(a)controls,`v'," %9.4f (_vif_val) "," %9.4f (_vif_inv) ",`_flag'" _n
+ 10. }
 
 . 
-end of do-file
+. * --- (b) 全中介模型 (主回归 Table 5 column 4) ---
+. display ""
 
-. do "<LOCAL_TEMP_DO_FILE>"
 
+. display "--- Spec (b): Full mediation model (PCs + ME + MF + controls) ---"
+--- Spec (b): Full mediation model (PCs + ME + MF + controls) ---
+
+. reg y_favrate_only_s z_pc1_s-z_pc7_s m_e_avg_s m_f_avg_s ///
+>     lnprice_s lnreviews_s has_discount_s free_shipping_s ///
+>     ln_imperfection_s ln_brand_avg_price_s recency_inv_s
+
+      Source |       SS           df       MS      Number of obs   =       200
+-------------+----------------------------------   F(16, 183)      =      5.02
+       Model |  60.6593673        16  3.79121046   Prob > F        =    0.0000
+    Residual |  138.340638       183  .755959769   R-squared       =    0.3048
+-------------+----------------------------------   Adj R-squared   =    0.2440
+       Total |  199.000005       199  1.00000003   Root MSE        =    .86946
+
+--------------------------------------------------------------------------------------
+    y_favrate_only_s | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |   -.176183   .0778552    -2.26   0.025    -.3297923   -.0225737
+             z_pc2_s |  -.2572308   .0683581    -3.76   0.000    -.3921022   -.1223594
+             z_pc3_s |  -.2242557   .0713994    -3.14   0.002    -.3651275   -.0833838
+             z_pc4_s |  -.2250001   .0731289    -3.08   0.002    -.3692844   -.0807159
+             z_pc5_s |  -.0142679   .0630193    -0.23   0.821    -.1386058      .11007
+             z_pc6_s |  -.0338673    .071124    -0.48   0.635    -.1741958    .1064613
+             z_pc7_s |   .0943207   .0635575     1.48   0.140    -.0310791    .2197205
+           m_e_avg_s |   .2493145   .0824621     3.02   0.003     .0866158    .4120133
+           m_f_avg_s |  -.2543373   .0857313    -2.97   0.003    -.4234861   -.0851885
+           lnprice_s |   .0933253   .1329734     0.70   0.484    -.1690328    .3556834
+         lnreviews_s |  -.1241279   .0715306    -1.74   0.084    -.2652587    .0170029
+      has_discount_s |  -.0998017   .0681686    -1.46   0.145    -.2342992    .0346958
+     free_shipping_s |   .1790757   .0668843     2.68   0.008     .0471121    .3110393
+   ln_imperfection_s |  -.0843876    .071617    -1.18   0.240    -.2256888    .0569136
+ln_brand_avg_price_s |  -.1648424   .1166017    -1.41   0.159    -.3948988    .0652141
+       recency_inv_s |  -.0631706   .0672612    -0.94   0.349    -.1958777    .0695364
+               _cons |   1.78e-08   .0614801     0.00   1.000    -.1213009    .1213009
+--------------------------------------------------------------------------------------
+
+. estat vif
+
+    Variable |       VIF       1/VIF  
+-------------+----------------------
+   lnprice_s |      4.65    0.214840
+ln_brand_a~s |      3.58    0.279406
+   m_f_avg_s |      1.93    0.516853
+   m_e_avg_s |      1.79    0.558646
+     z_pc1_s |      1.60    0.626715
+     z_pc4_s |      1.41    0.710342
+ln_imperfe~s |      1.35    0.740650
+ lnreviews_s |      1.35    0.742440
+     z_pc3_s |      1.34    0.745172
+     z_pc6_s |      1.33    0.750953
+     z_pc2_s |      1.23    0.812952
+has_discou~s |      1.22    0.817479
+recency_in~s |      1.19    0.839686
+free_shipp~s |      1.18    0.849174
+     z_pc7_s |      1.06    0.940397
+     z_pc5_s |      1.05    0.956529
+-------------+----------------------
+    Mean VIF |      1.70
+
+. foreach v in z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s ///
+>              m_e_avg_s m_f_avg_s ///
+>              lnprice_s lnreviews_s has_discount_s free_shipping_s ///
+>              ln_imperfection_s ln_brand_avg_price_s recency_inv_s {
+  2.     capture drop _vif_tmp
+  3.     quietly reg `v' z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s ///
+>         m_e_avg_s m_f_avg_s ///
+>         lnprice_s lnreviews_s has_discount_s free_shipping_s ///
+>         ln_imperfection_s ln_brand_avg_price_s recency_inv_s
+  4.     scalar _vif_val = 1 / (1 - e(r2))
+  5.     scalar _vif_inv = 1 - e(r2)
+  6.     local _flag = ""
+  7.     if _vif_val >= 10 local _flag = "SEVERE(>=10)"
+  8.     else if _vif_val >= 5 local _flag = "elevated(5-10)"
+  9.     file write vif_fh "(b)full_mediation,`v'," %9.4f (_vif_val) "," %9.4f (_vif_inv) ",`_flag'" _n
+ 10. }
+
+. 
+. * --- (c) 维度分解 (Table 7, 共线性最严重: 7PCs + 12mediators + 7controls) ---
+. display ""
+
+
+. display "--- Spec (c): Dimensional decomposition (26 predictors) ---"
+--- Spec (c): Dimensional decomposition (26 predictors) ---
+
+. reg y_favrate_only_s z_pc1_s-z_pc7_s ///
+>     me1_z_s me2_z_s me3_z_s me4_z_s me5_z_s ///
+>     mf1_z_s mf2_z_s mf3_z_s mf4_z_s mf5_z_s mf6_z_s mf7_z_s ///
+>     lnprice_s lnreviews_s has_discount_s free_shipping_s ///
+>     ln_imperfection_s ln_brand_avg_price_s recency_inv_s
+
+      Source |       SS           df       MS      Number of obs   =       200
+-------------+----------------------------------   F(26, 173)      =      4.76
+       Model |  82.9637017        26  3.19091161   Prob > F        =    0.0000
+    Residual |  116.036303       173  .670730077   R-squared       =    0.4169
+-------------+----------------------------------   Adj R-squared   =    0.3293
+       Total |  199.000005       199  1.00000003   Root MSE        =    .81898
+
+--------------------------------------------------------------------------------------
+    y_favrate_only_s | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |  -.1830698   .0817606    -2.24   0.026    -.3444465   -.0216932
+             z_pc2_s |  -.2505128   .0708299    -3.54   0.001    -.3903149   -.1107108
+             z_pc3_s |  -.2539486   .0715632    -3.55   0.000    -.3951981   -.1126992
+             z_pc4_s |  -.2565444   .0719397    -3.57   0.000    -.3985369   -.1145519
+             z_pc5_s |   .0006838   .0602297     0.01   0.991    -.1181959    .1195635
+             z_pc6_s |  -.0406609   .0700956    -0.58   0.563    -.1790137    .0976918
+             z_pc7_s |   .1640947   .0675081     2.43   0.016     .0308491    .2973403
+             me1_z_s |   .0329437   .0937879     0.35   0.726    -.1521722    .2180597
+             me2_z_s |   .1228371   .0951214     1.29   0.198    -.0649108     .310585
+             me3_z_s |   .2272344   .1126805     2.02   0.045     .0048289    .4496399
+             me4_z_s |   .0151295   .0919035     0.16   0.869     -.166267    .1965261
+             me5_z_s |  -.0736423   .0845438    -0.87   0.385    -.2405123    .0932278
+             mf1_z_s |  -.0297658    .118401    -0.25   0.802    -.2634624    .2039307
+             mf2_z_s |  -.3510183   .1068014    -3.29   0.001    -.5618198   -.1402168
+             mf3_z_s |   -.088828   .1139209    -0.78   0.437    -.3136818    .1360257
+             mf4_z_s |   .1590838   .0979659     1.62   0.106    -.0342784    .3524461
+             mf5_z_s |  -.0998372    .086665    -1.15   0.251     -.270894    .0712197
+             mf6_z_s |   .1537859   .0931176     1.65   0.100    -.0300069    .3375788
+             mf7_z_s |  -.2363419   .0851579    -2.78   0.006    -.4044242   -.0682597
+           lnprice_s |   .1560911   .1287596     1.21   0.227    -.0980508     .410233
+         lnreviews_s |  -.1050711    .072732    -1.44   0.150    -.2486274    .0384851
+      has_discount_s |  -.0693606   .0666902    -1.04   0.300    -.2009917    .0622706
+     free_shipping_s |   .1607351   .0650838     2.47   0.014     .0322745    .2891957
+   ln_imperfection_s |  -.1215743   .0713238    -1.70   0.090    -.2623512    .0192027
+ln_brand_avg_price_s |   -.149287   .1138563    -1.31   0.192    -.3740132    .0754392
+       recency_inv_s |  -.0673684   .0658745    -1.02   0.308    -.1973896    .0626528
+               _cons |   1.71e-08   .0579107     0.00   1.000    -.1143025    .1143025
+--------------------------------------------------------------------------------------
+
+. estat vif
+
+    Variable |       VIF       1/VIF  
+-------------+----------------------
+   lnprice_s |      4.92    0.203299
+     mf1_z_s |      4.16    0.240427
+     mf3_z_s |      3.85    0.259710
+ln_brand_a~s |      3.85    0.260004
+     me3_z_s |      3.77    0.265459
+     mf2_z_s |      3.38    0.295489
+     mf4_z_s |      2.85    0.351192
+     me2_z_s |      2.68    0.372510
+     me1_z_s |      2.61    0.383178
+     mf6_z_s |      2.57    0.388715
+     me4_z_s |      2.51    0.399053
+     mf5_z_s |      2.23    0.448753
+     mf7_z_s |      2.15    0.464777
+     me5_z_s |      2.12    0.471554
+     z_pc1_s |      1.98    0.504205
+ lnreviews_s |      1.57    0.637154
+     z_pc4_s |      1.54    0.651265
+     z_pc3_s |      1.52    0.658135
+ln_imperfe~s |      1.51    0.662560
+     z_pc2_s |      1.49    0.671833
+     z_pc6_s |      1.46    0.685982
+     z_pc7_s |      1.35    0.739576
+has_discou~s |      1.32    0.757829
+recency_in~s |      1.29    0.776712
+free_shipp~s |      1.26    0.795698
+     z_pc5_s |      1.08    0.929123
+-------------+----------------------
+    Mean VIF |      2.35
+
+. foreach v in z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s ///
+>              me1_z_s me2_z_s me3_z_s me4_z_s me5_z_s ///
+>              mf1_z_s mf2_z_s mf3_z_s mf4_z_s mf5_z_s mf6_z_s mf7_z_s ///
+>              lnprice_s lnreviews_s has_discount_s free_shipping_s ///
+>              ln_imperfection_s ln_brand_avg_price_s recency_inv_s {
+  2.     capture drop _vif_tmp
+  3.     quietly reg `v' z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s ///
+>         me1_z_s me2_z_s me3_z_s me4_z_s me5_z_s ///
+>         mf1_z_s mf2_z_s mf3_z_s mf4_z_s mf5_z_s mf6_z_s mf7_z_s ///
+>         lnprice_s lnreviews_s has_discount_s free_shipping_s ///
+>         ln_imperfection_s ln_brand_avg_price_s recency_inv_s
+  4.     scalar _vif_val = 1 / (1 - e(r2))
+  5.     scalar _vif_inv = 1 - e(r2)
+  6.     local _flag = ""
+  7.     if _vif_val >= 10 local _flag = "SEVERE(>=10)"
+  8.     else if _vif_val >= 5 local _flag = "elevated(5-10)"
+  9.     file write vif_fh "(c)decomposition,`v'," %9.4f (_vif_val) "," %9.4f (_vif_inv) ",`_flag'" _n
+ 10. }
+
+. 
+. file close vif_fh
+
+. display ""
+
+
+. display "VIF 表已导出: stata/output/VIF_diagnostics.csv"
+VIF 表已导出: stata/output/VIF_diagnostics.csv
+
+. display "阈值参考: VIF<5 良好, 5-10 可接受, >=10 严重"
+阈值参考: VIF<5 良好, 5-10 可接受, >=10 严重
+
+. 
 . 
 . *==============================================================================
-. * Part 2. 主中介 4 列(标准化 β,可直接比较)
+. * Part 2. 主中介 4 列回归 (Y = y_favrate_only_s)
 . *==============================================================================
-. use "data_anonymized/product_master.dta", clear
+. use "data/processed/product_master.dta", clear
 
 . 
-. global X "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
+. global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
-. global ME "m_e_avg_s"
+. global ME   "m_e_avg_s"
 
-. global MF "m_f_avg_s"
+. global MF   "m_f_avg_s"
 
-. global Y "y_50_50_s"
+. global Y    "y_favrate_only_s"
 
-. global CTRL "lnprice_s lnreviews_s"
+. global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
 . 
-. * (1) X → M_E
+. * (1) X -> M_E
 . reg $ME $X $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        200
-                                                F(9, 190)         =       3.18
-                                                Prob > F          =     0.0013
-                                                R-squared         =     0.1748
-                                                Root MSE          =     .92968
+                                                F(14, 185)        =       2.24
+                                                Prob > F          =     0.0078
+                                                R-squared         =     0.1899
+                                                Root MSE          =     .93347
 
-------------------------------------------------------------------------------
-             |               Robust
-   m_e_avg_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |   .0112281    .090924     0.12   0.902    -.1681221    .1905782
-     z_pc2_s |   .0382588   .0799969     0.48   0.633    -.1195372    .1960549
-     z_pc3_s |   .3012748   .0817705     3.68   0.000     .1399803    .4625693
-     z_pc4_s |   .0025447   .0660001     0.04   0.969    -.1276424    .1327317
-     z_pc5_s |  -.0554399   .0573223    -0.97   0.335    -.1685097      .05763
-     z_pc6_s |   .0162941   .0644306     0.25   0.801     -.110797    .1433853
-     z_pc7_s |   .0704261   .0725318     0.97   0.333     -.072645    .2134972
-   lnprice_s |   .2572218   .1120997     2.29   0.023      .036102    .4783416
- lnreviews_s |   .2788844   .0991892     2.81   0.005      .083231    .4745379
-       _cons |  -8.67e-10   .0657386    -0.00   1.000    -.1296712    .1296712
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+           m_e_avg_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |  -.0137518   .0958961    -0.14   0.886    -.2029423    .1754387
+             z_pc2_s |   .0388036   .0826567     0.47   0.639    -.1242674    .2018745
+             z_pc3_s |   .3015435   .0838987     3.59   0.000     .1360222    .4670648
+             z_pc4_s |   .0025287   .0761299     0.03   0.974    -.1476657    .1527231
+             z_pc5_s |  -.0593554   .0591453    -1.00   0.317    -.1760415    .0573306
+             z_pc6_s |   .0094809   .0640539     0.15   0.882    -.1168892     .135851
+             z_pc7_s |   .0883478   .0730545     1.21   0.228    -.0557791    .2324747
+           lnprice_s |    .206396   .1219599     1.69   0.092     -.034215     .447007
+         lnreviews_s |   .2857094    .105136     2.72   0.007     .0782898     .493129
+      has_discount_s |  -.0058684   .0791434    -0.07   0.941     -.162008    .1502712
+     free_shipping_s |  -.0852472   .0655783    -1.30   0.195    -.2146247    .0441302
+   ln_imperfection_s |  -.0468174   .0755702    -0.62   0.536    -.1959076    .1022728
+ln_brand_avg_price_s |   .0481503   .1095675     0.44   0.661    -.1680121    .2643127
+       recency_inv_s |  -.0955822   .0546534    -1.75   0.082    -.2034063     .012242
+               _cons |  -6.24e-10   .0660064    -0.00   1.000     -.130222     .130222
+--------------------------------------------------------------------------------------
 
 . est store m1_aE
 
 . 
-. * (2) X → M_F
+. * (2) X -> M_F
 . reg $MF $X $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        200
-                                                F(9, 190)         =       4.56
+                                                F(14, 185)        =       5.80
                                                 Prob > F          =     0.0000
-                                                R-squared         =     0.1832
-                                                Root MSE          =     .92495
+                                                R-squared         =     0.2505
+                                                Root MSE          =     .89788
 
-------------------------------------------------------------------------------
-             |               Robust
-   m_f_avg_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |   .1538457   .0680251     2.26   0.025     .0196643    .2880272
-     z_pc2_s |  -.0354284   .0642666    -0.55   0.582     -.162196    .0913392
-     z_pc3_s |  -.0364198   .0652739    -0.56   0.578    -.1651744    .0923348
-     z_pc4_s |  -.0330783   .0640607    -0.52   0.606    -.1594398    .0932832
-     z_pc5_s |    .009623   .0588434     0.16   0.870    -.1064472    .1256932
-     z_pc6_s |    .133887   .0640062     2.09   0.038      .007633    .2601411
-     z_pc7_s |   .0014841   .0737647     0.02   0.984    -.1440188     .146987
-   lnprice_s |   .3115025   .0870457     3.58   0.000     .1398024    .4832025
- lnreviews_s |   .3556131   .0776832     4.58   0.000     .2023808    .5088454
-       _cons |  -3.92e-09   .0654035    -0.00   1.000    -.1290103    .1290103
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+           m_f_avg_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |   .0767824    .070439     1.09   0.277    -.0621846    .2157494
+             z_pc2_s |  -.0574279   .0643845    -0.89   0.374    -.1844502    .0695945
+             z_pc3_s |  -.0477262   .0690828    -0.69   0.491    -.1840174    .0885651
+             z_pc4_s |  -.0559013   .0651164    -0.86   0.392    -.1843674    .0725648
+             z_pc5_s |  -.0249329   .0589274    -0.42   0.673    -.1411891    .0913232
+             z_pc6_s |   .1138468   .0604641     1.88   0.061     -.005441    .2331345
+             z_pc7_s |   .0263456   .0733202     0.36   0.720    -.1183057    .1709968
+           lnprice_s |   .0599399   .1076286     0.56   0.578    -.1523974    .2722772
+         lnreviews_s |   .3031279   .0811118     3.74   0.000     .1431048     .463151
+      has_discount_s |  -.0558396   .0816462    -0.68   0.495     -.216917    .1052377
+     free_shipping_s |  -.0977317   .0622517    -1.57   0.118    -.2205463    .0250828
+   ln_imperfection_s |   -.214179   .0708407    -3.02   0.003    -.3539385   -.0744196
+ln_brand_avg_price_s |   .1591238   .1055332     1.51   0.133    -.0490795    .3673272
+       recency_inv_s |   .0403941   .0465438     0.87   0.387    -.0514308     .132219
+               _cons |  -4.26e-09   .0634894    -0.00   1.000    -.1252563    .1252563
+--------------------------------------------------------------------------------------
 
 . est store m2_aF
 
 . 
-. * (3) X → Y (总效应 c)
+. * (3) X -> Y (总效应 c)
 . reg $Y $X $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        200
-                                                F(9, 190)         =       6.83
+                                                F(14, 185)        =      10.34
                                                 Prob > F          =     0.0000
-                                                R-squared         =     0.2147
-                                                Root MSE          =     .90692
+                                                R-squared         =     0.2610
+                                                Root MSE          =     .89156
 
-------------------------------------------------------------------------------
-             |               Robust
-   y_50_50_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |  -.2943529   .0739322    -3.98   0.000    -.4401863   -.1485195
-     z_pc2_s |  -.2465802   .0712278    -3.46   0.001     -.387079   -.1060813
-     z_pc3_s |  -.1176757   .0524963    -2.24   0.026    -.2212261   -.0141252
-     z_pc4_s |  -.2397378   .0740962    -3.24   0.001    -.3858948   -.0935809
-     z_pc5_s |  -.1478147   .0621192    -2.38   0.018    -.2703466   -.0252827
-     z_pc6_s |  -.0907977   .0689926    -1.32   0.190    -.2268876    .0452921
-     z_pc7_s |   .0825427   .0616132     1.34   0.182     -.038991    .2040765
-   lnprice_s |  -.0597996   .0972292    -0.62   0.539    -.2515868    .1319877
- lnreviews_s |   .0898773   .1071113     0.84   0.402    -.1214028    .3011573
-       _cons |  -1.14e-09   .0641289    -0.00   1.000     -.126496     .126496
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+    y_favrate_only_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |  -.1991401   .0778974    -2.56   0.011    -.3528216   -.0454586
+             z_pc2_s |  -.2329505   .0730113    -3.19   0.002    -.3769923   -.0889086
+             z_pc3_s |   -.136938   .0568206    -2.41   0.017    -.2490376   -.0248384
+             z_pc4_s |  -.2101519   .0652909    -3.22   0.002    -.3389624   -.0813414
+             z_pc5_s |  -.0227247    .062606    -0.36   0.717    -.1462382    .1007887
+             z_pc6_s |   -.060459   .0653945    -0.92   0.356    -.1894738    .0685558
+             z_pc7_s |   .1096464   .0597754     1.83   0.068    -.0082826    .2275755
+           lnprice_s |   .1295379   .1267791     1.02   0.308    -.1205808    .3796566
+         lnreviews_s |  -.1299931   .0773902    -1.68   0.095    -.2826739    .0226877
+      has_discount_s |  -.0870626   .0660645    -1.32   0.189    -.2173994    .0432741
+     free_shipping_s |   .1826791   .0737119     2.48   0.014     .0372552    .3281031
+   ln_imperfection_s |  -.0415861   .0680477    -0.61   0.542    -.1758354    .0926631
+ln_brand_avg_price_s |  -.1933089    .105026    -1.84   0.067    -.4005116    .0138938
+       recency_inv_s |  -.0972744   .0572126    -1.70   0.091    -.2101474    .0155986
+               _cons |   1.87e-08   .0630429     0.00   1.000    -.1243755    .1243755
+--------------------------------------------------------------------------------------
 
 . est store m3_total
 
 . 
-. * (4) X + M_E + M_F → Y (满模型 c'+b)
+. * (4) X + M_E + M_F -> Y (满模型 c'+b)
 . reg $Y $X $ME $MF $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        200
-                                                F(11, 188)        =       7.42
+                                                F(16, 183)        =       9.89
                                                 Prob > F          =     0.0000
-                                                R-squared         =     0.2655
-                                                Root MSE          =     .88174
+                                                R-squared         =     0.3048
+                                                Root MSE          =     .86946
 
-------------------------------------------------------------------------------
-             |               Robust
-   y_50_50_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |  -.2679276   .0773377    -3.46   0.001    -.4204888   -.1153663
-     z_pc2_s |  -.2646862   .0696837    -3.80   0.000    -.4021486   -.1272237
-     z_pc3_s |  -.2133794   .0574016    -3.72   0.000    -.3266134   -.1001454
-     z_pc4_s |  -.2468789   .0742037    -3.33   0.001    -.3932578   -.1005001
-     z_pc5_s |   -.129639   .0597809    -2.17   0.031    -.2475666   -.0117115
-     z_pc6_s |  -.0697202   .0680577    -1.02   0.307    -.2039751    .0645346
-     z_pc7_s |    .062103   .0623034     1.00   0.320    -.0608005    .1850065
-   m_e_avg_s |   .2943022   .0665826     4.42   0.000     .1629571    .4256472
-   m_f_avg_s |  -.1932442   .0863526    -2.24   0.026    -.3635888   -.0228996
-   lnprice_s |  -.0753045   .0949589    -0.79   0.429    -.2626264    .1120175
- lnreviews_s |   .0765211   .1014507     0.75   0.452    -.1236069    .2766492
-       _cons |  -1.64e-09   .0623482    -0.00   1.000     -.122992     .122992
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+    y_favrate_only_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |   -.176183   .0788123    -2.24   0.027    -.3316805   -.0206854
+             z_pc2_s |  -.2572308   .0713674    -3.60   0.000    -.3980396    -.116422
+             z_pc3_s |  -.2242557    .065283    -3.44   0.001    -.3530599   -.0954515
+             z_pc4_s |  -.2250001   .0669189    -3.36   0.001     -.357032   -.0929683
+             z_pc5_s |  -.0142679   .0609192    -0.23   0.815    -.1344623    .1059265
+             z_pc6_s |  -.0338673   .0653737    -0.52   0.605    -.1628503    .0951158
+             z_pc7_s |   .0943207   .0607339     1.55   0.122    -.0255079    .2141493
+           m_e_avg_s |   .2493145   .0743857     3.35   0.001     .1025507    .3960783
+           m_f_avg_s |  -.2543373   .0887411    -2.87   0.005    -.4294244   -.0792501
+           lnprice_s |   .0933253   .1240805     0.75   0.453    -.1514869    .3381375
+         lnreviews_s |  -.1241279   .0842583    -1.47   0.142    -.2903705    .0421148
+      has_discount_s |  -.0998017   .0666859    -1.50   0.136    -.2313738    .0317704
+     free_shipping_s |   .1790757   .0699249     2.56   0.011      .041113    .3170384
+   ln_imperfection_s |  -.0843876   .0693246    -1.22   0.225    -.2211659    .0523908
+ln_brand_avg_price_s |  -.1648424   .1072037    -1.54   0.126    -.3763565    .0466717
+       recency_inv_s |  -.0631706   .0562928    -1.12   0.263    -.1742369    .0478956
+               _cons |   1.78e-08   .0614801     0.00   1.000    -.1213009    .1213009
+--------------------------------------------------------------------------------------
 
 . est store m4_full
 
 . 
 . esttab m1_aE m2_aF m3_total m4_full ///
->     using "stata/output/T3_main_mediation_v2.rtf", replace ///
+>     using "stata/output/T3_main_mediation.rtf", replace ///
 >     b(%6.3f) t(%6.2f) star(* 0.10 ** 0.05 *** 0.01) ///
 >     scalar(N r2 r2_a F) compress nogaps label ///
 >     mtitles("M_E (a-path)" "M_F (a-path)" "Y total (c)" "Y full (c'+b)") ///
->     title("Table 3. Main Parallel Mediation (N=200, standardized β)") ///
->     addnote("All vars standardized (z-score). Robust SE in parentheses." ///
+>     title("Table 3. Main Parallel Mediation — Y = favorable-rate only (N=200)") ///
+>     addnote("Primary outcome: platform favorable rate (logit-transformed, z-scored)." ///
+>             "Source-separated from text-extracted mediators ." ///
+>             "Full control specification. Robust SE in parentheses." ///
 >             "*** p<0.01, ** p<0.05, * p<0.10")
-(file stata/output/T3_main_mediation_v2.rtf not found)
-(output written to stata/output/T3_main_mediation_v2.rtf)
-
-. 
-. 
-end of do-file
-
-. do "<LOCAL_TEMP_DO_FILE>"
+(output written to stata/output/T3_main_mediation.rtf)
 
 . 
 . 
 . *==============================================================================
-. * Part 3. Parallel Bootstrap - 14 间接 + 总效应 + 强弱比较 (Table 4)
+. * Part 3. Parallel Bootstrap — 14 indirect + 总效应 + 路径强弱比较
 . *==============================================================================
-. use "data_anonymized/product_master.dta", clear
+. use "data/processed/product_master.dta", clear
 
-. global X "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
+. global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
-. global ME "m_e_avg_s"
+. global ME   "m_e_avg_s"
 
-. global MF "m_f_avg_s"
+. global MF   "m_f_avg_s"
 
-. global Y "y_50_50_s"
+. global Y    "y_favrate_only_s"
 
-. global CTRL "lnprice_s lnreviews_s"
+. global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
 . 
 . capture program drop med_parallel
@@ -417,29 +848,24 @@ end of do-file
 >         ($MF <- $X $CTRL) ///
 >         ($Y  <- $X $ME $MF $CTRL)
   2. 
-.     * a-paths (7 PC × 2 mediators)
 .     forvalues i = 1/7 {
   3.         scalar aE`i' = _b[$ME:z_pc`i'_s]
   4.         scalar aF`i' = _b[$MF:z_pc`i'_s]
   5.     }
-  6.     * b-paths
-.     scalar bE = _b[$Y:$ME]
+  6.     scalar bE = _b[$Y:$ME]
   7.     scalar bF = _b[$Y:$MF]
   8. 
-.     * 14 个 indirect
 .     forvalues i = 1/7 {
   9.         return scalar indE_pc`i' = aE`i' * bE
  10.         return scalar indF_pc`i' = aF`i' * bF
  11.     }
  12. 
-.     * 总绝对效应 + diff(论文 "感性是否真的强过功能" 的统计检验)
 .     scalar tE = abs(aE1*bE)+abs(aE2*bE)+abs(aE3*bE)+abs(aE4*bE)+abs(aE5*bE)+abs(aE6*bE)+abs(aE7*bE)
  13.     scalar tF = abs(aF1*bF)+abs(aF2*bF)+abs(aF3*bF)+abs(aF4*bF)+abs(aF5*bF)+abs(aF6*bF)+abs(aF7*bF)
  14.     return scalar totE_abs = tE
  15.     return scalar totF_abs = tF
  16.     return scalar diff_EF  = tE - tF
- 17. 
-.     return scalar bE = bE
+ 17.     return scalar bE = bE
  18.     return scalar bF = bF
  19. end
 
@@ -536,72 +962,67 @@ Bootstrap results                                        Number of obs =   200
              |   Observed   Bootstrap                         Normal-based
              | coefficient  std. err.      z    P>|z|     [95% conf. interval]
 -------------+----------------------------------------------------------------
-    indE_pc1 |   .0033045   .0278044     0.12   0.905    -.0511911       .0578
-    indE_pc2 |   .0112597   .0261257     0.43   0.666    -.0399457     .062465
-    indE_pc3 |   .0886658   .0333408     2.66   0.008      .023319    .1540127
-    indE_pc4 |   .0007489   .0211239     0.04   0.972    -.0406531    .0421509
-    indE_pc5 |  -.0163161   .0176994    -0.92   0.357    -.0510064    .0183742
-    indE_pc6 |   .0047954    .020867     0.23   0.818    -.0361031    .0456939
-    indE_pc7 |   .0207266   .0222026     0.93   0.351    -.0227897    .0642429
-    indF_pc1 |  -.0297298   .0208295    -1.43   0.153    -.0705548    .0110952
-    indF_pc2 |   .0068463   .0141176     0.48   0.628    -.0208236    .0345163
-    indF_pc3 |   .0070379   .0144202     0.49   0.626    -.0212251     .035301
-    indF_pc4 |   .0063922   .0145225     0.44   0.660    -.0220714    .0348557
-    indF_pc5 |  -.0018596    .013015    -0.14   0.886    -.0273685    .0236493
-    indF_pc6 |  -.0258729    .017746    -1.46   0.145    -.0606544    .0089086
-    indF_pc7 |  -.0002868   .0162155    -0.02   0.986    -.0320687    .0314951
-          bE |   .2943022    .070693     4.16   0.000     .1557464    .4328579
-          bF |  -.1932442   .0857819    -2.25   0.024    -.3613736   -.0251147
-    totE_abs |   .1458169   .0744799     1.96   0.050    -.0001611    .2917949
-    totF_abs |   .0780255   .0527465     1.48   0.139    -.0253557    .1814067
-     diff_EF |   .0677914   .0728868     0.93   0.352    -.0750641    .2106468
+    indE_pc1 |  -.0034285   .0257682    -0.13   0.894    -.0539332    .0470762
+    indE_pc2 |   .0096743   .0241775     0.40   0.689    -.0377127    .0570613
+    indE_pc3 |   .0751792   .0352196     2.13   0.033     .0061501    .1442082
+    indE_pc4 |   .0006304   .0216175     0.03   0.977    -.0417391    .0429999
+    indE_pc5 |  -.0147982   .0160252    -0.92   0.356     -.046207    .0166107
+    indE_pc6 |   .0023637   .0183644     0.13   0.898    -.0336299    .0383573
+    indE_pc7 |   .0220264   .0199956     1.10   0.271    -.0171643     .061217
+    indF_pc1 |  -.0195286    .022642    -0.86   0.388    -.0639062     .024849
+    indF_pc2 |    .014606   .0184366     0.79   0.428    -.0215291    .0507412
+    indF_pc3 |   .0121385   .0186035     0.65   0.514    -.0243236    .0486007
+    indF_pc4 |   .0142178   .0189409     0.75   0.453    -.0229056    .0513412
+    indF_pc5 |   .0063414   .0170323     0.37   0.710    -.0270414    .0397241
+    indF_pc6 |  -.0289555   .0200265    -1.45   0.148    -.0682067    .0102958
+    indF_pc7 |  -.0067007   .0207351    -0.32   0.747    -.0473407    .0339394
+          bE |   .2493145   .0793708     3.14   0.002     .0937507    .4048784
+          bF |  -.2543373   .0904166    -2.81   0.005    -.4315506    -.077124
+    totE_abs |   .1281007   .0774921     1.65   0.098    -.0237809    .2799824
+    totF_abs |   .1024885   .0569857     1.80   0.072    -.0092014    .2141784
+     diff_EF |   .0256122   .0777911     0.33   0.742    -.1268556    .1780801
 ------------------------------------------------------------------------------
 
-. est store boot_parallel
+. est store boot_indirect
 
 . 
-. esttab boot_parallel using "stata/output/T4_indirect_effects_v2.rtf", replace ///
->     b(%7.4f) ci(%7.4f) star(* 0.10 ** 0.05 ***========================================
-) required
-r(100);
-
-end of do-file
-
-r(100);
-
-. do "<LOCAL_TEMP_DO_FILE>"
+. esttab boot_indirect using "stata/output/T4_indirect_effects.rtf", replace ///
+>     b(%7.4f) ci(%7.4f) star(* 0.10 ** 0.05 *** 0.01) ///
+>     title("Table 4. Parallel Indirect Effects — Y = favorable-rate only") ///
+>     label nonotes addnote("5000 Bootstrap reps. CI = percentile 2.5/97.5." ///
+>         "totE_abs / totF_abs: sum of |a x b| across 7 PCs." ///
+>         "diff_EF > 0 (CI not crossing 0) = kansei path stronger than function.")
+(output written to stata/output/T4_indirect_effects.rtf)
 
 . 
 . 
 . *==============================================================================
-. * Part 4. Serial Mediation Path A: 视觉 → M_E → M_F → Y (Table 5A)
+. * Part 4. Serial Mediation Path A: Visual -> M_E -> M_F -> Y
 . *==============================================================================
-. use "data_anonymized/product_master.dta", clear
+. use "data/processed/product_master.dta", clear
 
-. global X "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
+. global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
-. global ME "m_e_avg_s"
+. global ME   "m_e_avg_s"
 
-. global MF "m_f_avg_s"
+. global MF   "m_f_avg_s"
 
-. global Y "y_50_50_s"
+. global Y    "y_favrate_only_s"
 
-. global CTRL "lnprice_s lnreviews_s"
+. global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
 . 
 . capture program drop serial_A
 
 . program serial_A, rclass
-  1.     * Path A: 美 (M_E) 影响 用 (M_F), 然后 M_F 影响 Y
-.     sem ($ME <- $X $CTRL) ///
+  1.     sem ($ME <- $X $CTRL) ///
 >         ($MF <- $X $ME $CTRL) ///
 >         ($Y  <- $X $ME $MF $CTRL)
   2. 
-.     scalar d_EF  = _b[$MF:$ME]      // M_E → M_F
-  3.     scalar bF_A  = _b[$Y:$MF]       // M_F → Y (controlling M_E)
-  4.     scalar bE_A  = _b[$Y:$ME]       // M_E → Y (direct, controlling M_F)
+.     scalar d_EF  = _b[$MF:$ME]
+  3.     scalar bF_A  = _b[$Y:$MF]
+  4.     scalar bE_A  = _b[$Y:$ME]
   5. 
-.     * Serial indirect: a_E_i × d_EF × b_F (per PC)
 .     forvalues i = 1/7 {
   6.         scalar aE`i' = _b[$ME:z_pc`i'_s]
   7.         return scalar serialA_pc`i' = aE`i' * d_EF * bF_A
@@ -665,59 +1086,56 @@ serialA_total: r(serialA_total)
               |   Observed   Bootstrap                         Normal-based
               | coefficient  std. err.      z    P>|z|     [95% conf. interval]
 --------------+----------------------------------------------------------------
-  serialA_pc1 |  -.0011826   .0113203    -0.10   0.917      -.02337    .0210047
-  serialA_pc2 |  -.0040297   .0103253    -0.39   0.696    -.0242668    .0162075
-  serialA_pc3 |  -.0317323   .0178928    -1.77   0.076    -.0668016    .0033369
-  serialA_pc4 |   -.000268   .0084185    -0.03   0.975     -.016768    .0162319
-  serialA_pc5 |   .0058393   .0074038     0.79   0.430    -.0086718    .0203505
-  serialA_pc6 |  -.0017162   .0083234    -0.21   0.837    -.0180299    .0145974
-  serialA_pc7 |  -.0074178   .0091184    -0.81   0.416    -.0252894    .0104539
-         d_EF |   .5450452   .0667997     8.16   0.000     .4141203    .6759701
-   bE_serialA |   .2943022   .0711002     4.14   0.000     .1549482    .4336561
-   bF_serialA |  -.1932442   .0847367    -2.28   0.023     -.359325   -.0271633
-serialA_total |  -.0405073   .0376184    -1.08   0.282     -.114238    .0332234
+  serialA_pc1 |   .0018742   .0146807     0.13   0.898    -.0268995     .030648
+  serialA_pc2 |  -.0052885   .0132192    -0.40   0.689    -.0311977    .0206206
+  serialA_pc3 |  -.0410975   .0202713    -2.03   0.043    -.0808285   -.0013665
+  serialA_pc4 |  -.0003446   .0122565    -0.03   0.978    -.0243669    .0236777
+  serialA_pc5 |   .0080896    .009319     0.87   0.385    -.0101754    .0263545
+  serialA_pc6 |  -.0012922   .0104225    -0.12   0.901    -.0217198    .0191355
+  serialA_pc7 |   -.012041   .0113142    -1.06   0.287    -.0342163    .0101344
+         d_EF |   .5358645   .0685824     7.81   0.000     .4014455    .6702835
+   bE_serialA |   .2493145   .0779436     3.20   0.001     .0965478    .4020813
+   bF_serialA |  -.2543373    .090302    -2.82   0.005     -.431326   -.0773486
+serialA_total |  -.0500999   .0486034    -1.03   0.303    -.1453609     .045161
 -------------------------------------------------------------------------------
 
-. est store boot_serialA
+. est store boot_serial_A
 
 . 
-. esttab boot_serialA using "stata/output/T5A_serial_path_A.rtf", replace ///
+. esttab boot_serial_A using "stata/output/T5A_serial_path_A.rtf", replace ///
 >     b(%7.4f) ci(%7.4f) star(* 0.10 ** 0.05 *** 0.01) ///
->     title("Table 5A. Serial Mediation Path A: Visual -> M_E -> M_F -> Y") ///
->     label nonotes addnote("d_EF = halo effect (kansei -> function perception)." ///
->         "Test of 'beautiful-is-usable' hypothesis (Tractinsky et al., 2000).")
-(file stata/output/T5A_serial_path_A.rtf not found)
+>     title("Table 5A. Serial Mediation Path A: Visual -> M_E -> M_F -> Y (Y=favrate)") ///
+>     label nonotes addnote("d_EF = halo effect (kansei -> function perception).")
 (output written to stata/output/T5A_serial_path_A.rtf)
 
 . 
 . 
 . *==============================================================================
-. * Part 5. Serial Mediation Path B: 视觉 → M_F → M_E → Y (Table 5B)
+. * Part 5. Serial Mediation Path B: Visual -> M_F -> M_E -> Y
 . *==============================================================================
-. use "data_anonymized/product_master.dta", clear
+. use "data/processed/product_master.dta", clear
 
-. global X "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
+. global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
-. global ME "m_e_avg_s"
+. global ME   "m_e_avg_s"
 
-. global MF "m_f_avg_s"
+. global MF   "m_f_avg_s"
 
-. global Y "y_50_50_s"
+. global Y    "y_favrate_only_s"
 
-. global CTRL "lnprice_s lnreviews_s"
+. global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
 . 
 . capture program drop serial_B
 
 . program serial_B, rclass
-  1.     * Path B: 用 (M_F) 影响 美 (M_E), 然后 M_E 影响 Y
-.     sem ($MF <- $X $CTRL) ///
+  1.     sem ($MF <- $X $CTRL) ///
 >         ($ME <- $X $MF $CTRL) ///
 >         ($Y  <- $X $ME $MF $CTRL)
   2. 
-.     scalar d_FE  = _b[$ME:$MF]      // M_F → M_E
-  3.     scalar bE_B  = _b[$Y:$ME]       // M_E → Y (controlling M_F)
-  4.     scalar bF_B  = _b[$Y:$MF]       // M_F → Y (direct)
+.     scalar d_FE  = _b[$ME:$MF]
+  3.     scalar bE_B  = _b[$Y:$ME]
+  4.     scalar bF_B  = _b[$Y:$MF]
   5. 
 .     forvalues i = 1/7 {
   6.         scalar aF`i' = _b[$MF:z_pc`i'_s]
@@ -782,97 +1200,99 @@ serialB_total: r(serialB_total)
               |   Observed   Bootstrap                         Normal-based
               | coefficient  std. err.      z    P>|z|     [95% conf. interval]
 --------------+----------------------------------------------------------------
-  serialB_pc1 |   .0249316   .0141017     1.77   0.077    -.0027073    .0525704
-  serialB_pc2 |  -.0057414   .0109607    -0.52   0.600     -.027224    .0157413
-  serialB_pc3 |   -.005902   .0116514    -0.51   0.612    -.0287384    .0169343
-  serialB_pc4 |  -.0053605   .0115457    -0.46   0.642    -.0279896    .0172686
-  serialB_pc5 |   .0015595   .0101979     0.15   0.878     -.018428    .0215469
-  serialB_pc6 |   .0216971   .0125696     1.73   0.084    -.0029388    .0463331
-  serialB_pc7 |   .0002405   .0127278     0.02   0.985    -.0247056    .0251866
-         d_FE |   .5506436   .0808456     6.81   0.000     .3921891    .7090981
-   bE_serialB |   .2943022   .0711002     4.14   0.000     .1549482    .4336561
-   bF_serialB |  -.1932442   .0847367    -2.28   0.023     -.359325   -.0271633
-serialB_total |   .0314247   .0359954     0.87   0.383    -.0391249    .1019743
+  serialB_pc1 |   .0110875   .0123807     0.90   0.370    -.0131782    .0353532
+  serialB_pc2 |  -.0082927   .0099289    -0.84   0.404     -.027753    .0111676
+  serialB_pc3 |  -.0068917     .01098    -0.63   0.530    -.0284122    .0146287
+  serialB_pc4 |  -.0080722   .0109678    -0.74   0.462    -.0295688    .0134243
+  serialB_pc5 |  -.0036004   .0094894    -0.38   0.704    -.0221992    .0149985
+  serialB_pc6 |   .0164397   .0106533     1.54   0.123    -.0044403    .0373197
+  serialB_pc7 |   .0038043   .0117555     0.32   0.746     -.019236    .0268447
+         d_FE |   .5791945   .0818903     7.07   0.000     .4186925    .7396964
+   bE_serialB |   .2493145   .0779436     3.20   0.001     .0965478    .4020813
+   bF_serialB |  -.2543373    .090302    -2.82   0.005     -.431326   -.0773486
+serialB_total |   .0044745   .0331606     0.13   0.893     -.060519     .069468
 -------------------------------------------------------------------------------
 
-. est store boot_serialB
+. est store boot_serial_B
 
 . 
-. esttab boot_serialB using "stata/output/T5B_serial_path_B.rtf", replace ///
+. esttab boot_serial_B using "stata/output/T5B_serial_path_B.rtf", replace ///
 >     b(%7.4f) ci(%7.4f) star(* 0.10 ** 0.05 *** 0.01) ///
->     title("Table 5B. Serial Mediation Path B: Visual -> M_F -> M_E -> Y") ///
+>     title("Table 5B. Serial Mediation Path B: Visual -> M_F -> M_E -> Y (Y=favrate)") ///
 >     label nonotes addnote("d_FE = function-to-kansei spillover.")
-(file stata/output/T5B_serial_path_B.rtf not found)
 (output written to stata/output/T5B_serial_path_B.rtf)
 
 . 
 . 
 . *==============================================================================
-. * Part 6. 分维度探索 (Table 6) + FDR 校正所需 p 值
+. * Part 6. 分维度探索 (12 mediators) + FDR 校正所需 p 值
 . *==============================================================================
-. use "data_anonymized/product_master.dta", clear
+. use "data/processed/product_master.dta", clear
 
-. global X "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
+. global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
-. global CTRL "lnprice_s lnreviews_s"
+. global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
 . 
-. reg y_50_50_s $X ///
+. reg y_favrate_only_s $X ///
 >     me1_z_s me2_z_s me3_z_s me4_z_s me5_z_s ///
 >     mf1_z_s mf2_z_s mf3_z_s mf4_z_s mf5_z_s mf6_z_s mf7_z_s ///
 >     $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        200
-                                                F(21, 178)        =       7.21
+                                                F(26, 173)        =      10.64
                                                 Prob > F          =     0.0000
-                                                R-squared         =     0.4272
-                                                Root MSE          =     .80024
+                                                R-squared         =     0.4169
+                                                Root MSE          =     .81898
 
-------------------------------------------------------------------------------
-             |               Robust
-   y_50_50_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |  -.2345424   .0793753    -2.95   0.004    -.3911801   -.0779047
-     z_pc2_s |  -.2441379   .0734188    -3.33   0.001     -.389021   -.0992547
-     z_pc3_s |  -.2412129   .0629986    -3.83   0.000    -.3655332   -.1168926
-     z_pc4_s |  -.2816833   .0726185    -3.88   0.000    -.4249873   -.1383793
-     z_pc5_s |  -.1000246   .0592814    -1.69   0.093    -.2170094    .0169603
-     z_pc6_s |  -.0533837   .0657477    -0.81   0.418    -.1831289    .0763615
-     z_pc7_s |   .1016188   .0615383     1.65   0.100    -.0198197    .2230573
-     me1_z_s |   .1443911   .0666266     2.17   0.032     .0129115    .2758707
-     me2_z_s |   .0473689   .0862805     0.55   0.584    -.1228954    .2176331
-     me3_z_s |   .0443382   .0946386     0.47   0.640    -.1424199    .2310962
-     me4_z_s |   .1261309   .0948081     1.33   0.185    -.0609617    .3132234
-     me5_z_s |  -.0980417    .081583    -1.20   0.231    -.2590361    .0629526
-     mf1_z_s |  -.1555872   .1222477    -1.27   0.205    -.3968285    .0856541
-     mf2_z_s |  -.3627695   .1058038    -3.43   0.001    -.5715607   -.1539782
-     mf3_z_s |  -.0099996   .1149545    -0.09   0.931    -.2368485    .2168494
-     mf4_z_s |   .2490939    .145702     1.71   0.089    -.0384316    .5366195
-     mf5_z_s |  -.0700663    .083007    -0.84   0.400    -.2338708    .0937382
-     mf6_z_s |   .1394436    .099085     1.41   0.161    -.0560888    .3349761
-     mf7_z_s |  -.1093714   .0900511    -1.21   0.226    -.2870765    .0683338
-   lnprice_s |   .0841676   .1056238     0.80   0.427    -.1242684    .2926036
- lnreviews_s |   .0894765   .0933065     0.96   0.339    -.0946528    .2736057
-       _cons |  -2.23e-09   .0565855    -0.00   1.000    -.1116646    .1116646
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+    y_favrate_only_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |  -.1830698   .0852542    -2.15   0.033    -.3513422   -.0147975
+             z_pc2_s |  -.2505128   .0760008    -3.30   0.001    -.4005211   -.1005046
+             z_pc3_s |  -.2539486   .0653684    -3.88   0.000    -.3829709   -.1249264
+             z_pc4_s |  -.2565444   .0658771    -3.89   0.000    -.3865707    -.126518
+             z_pc5_s |   .0006838   .0604497     0.01   0.991    -.1186301    .1199977
+             z_pc6_s |  -.0406609   .0649135    -0.63   0.532    -.1687854    .0874635
+             z_pc7_s |   .1640947    .068695     2.39   0.018     .0285064     .299683
+             me1_z_s |   .0329437   .0816988     0.40   0.687    -.1283109    .1941984
+             me2_z_s |   .1228371   .0854437     1.44   0.152    -.0458093    .2914835
+             me3_z_s |   .2272344   .0968664     2.35   0.020     .0360422    .4184266
+             me4_z_s |   .0151295   .0965129     0.16   0.876    -.1753648    .2056239
+             me5_z_s |  -.0736423   .0838194    -0.88   0.381    -.2390826    .0917981
+             mf1_z_s |  -.0297658   .1169968    -0.25   0.799    -.2606907    .2011591
+             mf2_z_s |  -.3510183   .0932339    -3.76   0.000    -.5350407    -.166996
+             mf3_z_s |   -.088828   .1053344    -0.84   0.400     -.296734    .1190779
+             mf4_z_s |   .1590838   .1106233     1.44   0.152    -.0592612    .3774288
+             mf5_z_s |  -.0998372   .0957071    -1.04   0.298     -.288741    .0890667
+             mf6_z_s |   .1537859   .1027415     1.50   0.136    -.0490023    .3565741
+             mf7_z_s |  -.2363419   .0873954    -2.70   0.008    -.4088406   -.0638433
+           lnprice_s |   .1560911   .1205565     1.29   0.197    -.0818598     .394042
+         lnreviews_s |  -.1050711   .0817685    -1.28   0.201    -.2664635    .0563212
+      has_discount_s |  -.0693606   .0668751    -1.04   0.301    -.2013568    .0626357
+     free_shipping_s |   .1607351   .0701825     2.29   0.023     .0222108    .2992594
+   ln_imperfection_s |  -.1215743    .069644    -1.75   0.083    -.2590355     .015887
+ln_brand_avg_price_s |   -.149287   .1090878    -1.37   0.173    -.3646013    .0660273
+       recency_inv_s |  -.0673684   .0620366    -1.09   0.279    -.1898144    .0550776
+               _cons |   1.71e-08   .0579107     0.00   1.000    -.1143025    .1143025
+--------------------------------------------------------------------------------------
 
 . est store m_decomp
 
 . 
-. esttab m_decomp using "stata/output/T6_decomposition_v2.rtf", replace ///
+. esttab m_decomp using "stata/output/T6_decomposition.rtf", replace ///
 >     b(%6.3f) t(%6.2f) star(* 0.10 ** 0.05 *** 0.01) ///
 >     scalar(N r2 r2_a F) compress nogaps label ///
->     title("Table 6. Dimensional Decomposition (12 mediators, std β, N=200)") ///
+>     title("Table 6. Dimensional Decomposition — Y = favorable-rate only (12 mediators, N=200)") ///
 >     nonotes
-(file stata/output/T6_decomposition_v2.rtf not found)
-(output written to stata/output/T6_decomposition_v2.rtf)
+(output written to stata/output/T6_decomposition.rtf)
 
 . 
-. * 导出 p 值供 FDR
+. * 导出 p 值供 Python FDR 校正
 . capture file close fh
 
 . file open fh using "stata/output/T6_decomp_pvalues.csv", write replace
-(file stata/output/T6_decomp_pvalues.csv not found)
 
 . file write fh "mediator,b,se,t,p_raw" _n
 
@@ -887,22 +1307,25 @@ Linear regression                               Number of obs     =        200
 
 . file close fh
 
+. display "P-values exported to stata/output/T6_decomp_pvalues.csv"
+P-values exported to stata/output/T6_decomp_pvalues.csv
+
 . 
 . 
 . *==============================================================================
-. * Part 7. 稳健性 N=185 (Table 7)
+. * Part 7. 稳健性 N=185 (n_reviews >= 20)
 . *==============================================================================
-. use "data_anonymized/product_master.dta", clear
+. use "data/processed/product_master.dta", clear
 
-. global X "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
+. global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
-. global ME "m_e_avg_s"
+. global ME   "m_e_avg_s"
 
-. global MF "m_f_avg_s"
+. global MF   "m_f_avg_s"
 
-. global Y "y_50_50_s"
+. global Y    "y_favrate_only_s"
 
-. global CTRL "lnprice_s lnreviews_s"
+. global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
 . 
 . keep if included_main == 1
@@ -915,271 +1338,317 @@ Subsample N = 185
 . reg $ME $X $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        185
-                                                F(9, 175)         =       3.32
-                                                Prob > F          =     0.0009
-                                                R-squared         =     0.1899
-                                                Root MSE          =     .85363
+                                                F(14, 170)        =       2.23
+                                                Prob > F          =     0.0085
+                                                R-squared         =     0.2214
+                                                Root MSE          =     .84907
 
-------------------------------------------------------------------------------
-             |               Robust
-   m_e_avg_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |   .0862421   .0829776     1.04   0.300    -.0775235    .2500078
-     z_pc2_s |   .1025707   .0755968     1.36   0.177    -.0466281    .2517694
-     z_pc3_s |   .3074434   .0868478     3.54   0.001     .1360396    .4788472
-     z_pc4_s |   .0369548   .0630736     0.59   0.559    -.0875281    .1614376
-     z_pc5_s |  -.0188315   .0579361    -0.33   0.746    -.1331749    .0955119
-     z_pc6_s |   .0053291   .0642746     0.08   0.934    -.1215242    .1321823
-     z_pc7_s |   .0236831   .0694022     0.34   0.733    -.1132901    .1606562
-   lnprice_s |   .3472576   .0962207     3.61   0.000     .1573552      .53716
- lnreviews_s |   .3727118   .0953538     3.91   0.000     .1845204    .5609033
-       _cons |   -.037354   .0666106    -0.56   0.576    -.1688175    .0941096
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+           m_e_avg_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |    .072964   .0826128     0.88   0.378     -.090115    .2360429
+             z_pc2_s |   .1041057   .0757691     1.37   0.171    -.0454638    .2536751
+             z_pc3_s |    .324281   .0874388     3.71   0.000     .1516754    .4968865
+             z_pc4_s |   .0559156   .0690746     0.81   0.419    -.0804388    .1922699
+             z_pc5_s |  -.0254525   .0594749    -0.43   0.669     -.142857    .0919521
+             z_pc6_s |   .0099065    .066622     0.15   0.882    -.1216064    .1414194
+             z_pc7_s |   .0568727   .0729118     0.78   0.436    -.0870565    .2008019
+           lnprice_s |   .2539659    .122576     2.07   0.040     .0119989    .4959329
+         lnreviews_s |   .3758128   .0944148     3.98   0.000     .1894364    .5621891
+      has_discount_s |   .0658198   .0734718     0.90   0.372    -.0792148    .2108543
+     free_shipping_s |  -.0924404   .0675486    -1.37   0.173    -.2257825    .0409017
+   ln_imperfection_s |  -.0543128   .0732301    -0.74   0.459    -.1988701    .0902446
+ln_brand_avg_price_s |   .0989162   .1038444     0.95   0.342    -.1060744    .3039068
+       recency_inv_s |  -.1262994   .0477853    -2.64   0.009    -.2206283   -.0319704
+               _cons |  -.0379476   .0667972    -0.57   0.571    -.1698064    .0939113
+--------------------------------------------------------------------------------------
 
 . est store r1
 
 . reg $MF $X $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        185
-                                                F(9, 175)         =       5.13
+                                                F(14, 170)        =       7.42
                                                 Prob > F          =     0.0000
-                                                R-squared         =     0.1735
-                                                Root MSE          =     .91013
+                                                R-squared         =     0.2628
+                                                Root MSE          =     .87212
 
-------------------------------------------------------------------------------
-             |               Robust
-   m_f_avg_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |   .2155079   .0702461     3.07   0.002     .0768694    .3541465
-     z_pc2_s |   .0031347    .067754     0.05   0.963    -.1305856    .1368549
-     z_pc3_s |  -.0209334   .0667446    -0.31   0.754    -.1526613    .1107946
-     z_pc4_s |  -.0213512   .0658801    -0.32   0.746    -.1513729    .1086706
-     z_pc5_s |   .0153136   .0598408     0.26   0.798    -.1027891    .1334162
-     z_pc6_s |   .1233262   .0665448     1.85   0.066    -.0080074    .2546599
-     z_pc7_s |   .0192314    .072101     0.27   0.790    -.1230679    .1615308
-   lnprice_s |   .3674531   .0943589     3.89   0.000     .1812252     .553681
- lnreviews_s |   .4182332   .1036347     4.04   0.000     .2136983     .622768
-       _cons |  -.0221903   .0755864    -0.29   0.769    -.1713687     .126988
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+           m_f_avg_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |   .1505385   .0715623     2.10   0.037     .0092732    .2918038
+             z_pc2_s |  -.0197901   .0673729    -0.29   0.769    -.1527854    .1132052
+             z_pc3_s |  -.0174788   .0671783    -0.26   0.795    -.1500899    .1151323
+             z_pc4_s |  -.0179923   .0671523    -0.27   0.789     -.150552    .1145673
+             z_pc5_s |  -.0267096   .0571283    -0.47   0.641    -.1394818    .0860627
+             z_pc6_s |   .1272309   .0622004     2.05   0.042     .0044462    .2500156
+             z_pc7_s |    .065513   .0677122     0.97   0.335     -.068152     .199178
+           lnprice_s |   .0410436   .1129975     0.36   0.717    -.1820153    .2641026
+         lnreviews_s |   .3195516   .1009975     3.16   0.002     .1201808    .5189224
+      has_discount_s |   .0326192   .0778657     0.42   0.676     -.121089    .1863273
+     free_shipping_s |  -.1021955   .0651365    -1.57   0.119     -.230776     .026385
+   ln_imperfection_s |  -.2362903   .0731514    -3.23   0.001    -.3806924   -.0918883
+ln_brand_avg_price_s |   .2281262   .1135365     2.01   0.046     .0040033    .4522491
+       recency_inv_s |    .016717   .0445948     0.37   0.708    -.0713139    .1047478
+               _cons |  -.0100476   .0717012    -0.14   0.889     -.151587    .1314918
+--------------------------------------------------------------------------------------
 
 . est store r2
 
 . reg $Y $X $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        185
-                                                F(9, 175)         =       6.61
+                                                F(14, 170)        =       8.90
                                                 Prob > F          =     0.0000
-                                                R-squared         =     0.2388
-                                                Root MSE          =     .76463
+                                                R-squared         =     0.2801
+                                                Root MSE          =      .8658
 
-------------------------------------------------------------------------------
-             |               Robust
-   y_50_50_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |  -.2101139   .0675323    -3.11   0.002    -.3433966   -.0768313
-     z_pc2_s |  -.1563417   .0575453    -2.72   0.007    -.2699139   -.0427696
-     z_pc3_s |  -.1321723     .04829    -2.74   0.007     -.227478   -.0368665
-     z_pc4_s |  -.1934878   .0694129    -2.79   0.006    -.3304819   -.0564937
-     z_pc5_s |  -.0926974    .053029    -1.75   0.082     -.197356    .0119612
-     z_pc6_s |  -.0390459   .0595424    -0.66   0.513    -.1565595    .0784676
-     z_pc7_s |   .1038153    .053002     1.96   0.052    -.0007902    .2084207
-   lnprice_s |  -.0264266   .0941742    -0.28   0.779      -.21229    .1594368
- lnreviews_s |  -.2025025   .1011612    -2.00   0.047    -.4021555   -.0028495
-       _cons |   .1038625   .0654042     1.59   0.114    -.0252201     .232945
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+    y_favrate_only_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |  -.1476959   .0808887    -1.83   0.070    -.3073715    .0119797
+             z_pc2_s |  -.1739827   .0722776    -2.41   0.017    -.3166599   -.0313055
+             z_pc3_s |  -.1402499   .0593099    -2.36   0.019    -.2573288   -.0231711
+             z_pc4_s |  -.1646551   .0657257    -2.51   0.013    -.2943987   -.0349115
+             z_pc5_s |   .0110047   .0623427     0.18   0.860    -.1120608    .1340702
+             z_pc6_s |  -.0282526   .0659773    -0.43   0.669    -.1584928    .1019877
+             z_pc7_s |    .127601   .0604045     2.11   0.036     .0083614    .2468406
+           lnprice_s |   .0933713   .1332544     0.70   0.484    -.1696751    .3564178
+         lnreviews_s |  -.3216502   .1097858    -2.93   0.004    -.5383693   -.1049312
+      has_discount_s |  -.0668637   .0681389    -0.98   0.328     -.201371    .0676437
+     free_shipping_s |   .1884317   .0804153     2.34   0.020     .0296906    .3471728
+   ln_imperfection_s |  -.0496556   .0677852    -0.73   0.465    -.1834646    .0841534
+ln_brand_avg_price_s |  -.1220139   .1098828    -1.11   0.268    -.3389243    .0948965
+       recency_inv_s |  -.0923717   .0579464    -1.59   0.113    -.2067589    .0220155
+               _cons |   .0662991   .0713247     0.93   0.354     -.074497    .2070952
+--------------------------------------------------------------------------------------
 
 . est store r3
 
 . reg $Y $X $ME $MF $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        185
-                                                F(11, 173)        =       8.79
+                                                F(16, 168)        =      10.48
                                                 Prob > F          =     0.0000
-                                                R-squared         =     0.3170
-                                                Root MSE          =     .72847
+                                                R-squared         =     0.3503
+                                                Root MSE          =     .82742
 
-------------------------------------------------------------------------------
-             |               Robust
-   y_50_50_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |  -.1764152   .0709015    -2.49   0.014    -.3163585   -.0364719
-     z_pc2_s |  -.1864691   .0549584    -3.39   0.001    -.2949445   -.0779937
-     z_pc3_s |  -.2308858   .0532611    -4.33   0.000     -.336011   -.1257606
-     z_pc4_s |  -.2105762   .0706611    -2.98   0.003    -.3500451   -.0711073
-     z_pc5_s |    -.08276   .0503216    -1.64   0.102    -.1820833    .0165632
-     z_pc6_s |  -.0064577   .0585176    -0.11   0.912     -.121958    .1090426
-     z_pc7_s |   .1019912   .0506832     2.01   0.046     .0019542    .2020283
-   m_e_avg_s |   .3021977   .0570905     5.29   0.000     .1895141    .4148813
-   m_f_avg_s |  -.2773025   .0742987    -3.73   0.000    -.4239512   -.1306538
-   lnprice_s |  -.0294713   .0915834    -0.32   0.748    -.2102361    .1512934
- lnreviews_s |  -.1991581   .0944634    -2.11   0.036    -.3856072   -.0127089
-       _cons |   .1089973   .0612173     1.78   0.077    -.0118316    .2298262
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+    y_favrate_only_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |  -.1186122    .080763    -1.47   0.144    -.2780534    .0408289
+             z_pc2_s |  -.2130389   .0693886    -3.07   0.002    -.3500248    -.076053
+             z_pc3_s |  -.2467406   .0691864    -3.57   0.000    -.3833274   -.1101538
+             z_pc4_s |  -.1881607   .0674973    -2.79   0.006    -.3214128   -.0549086
+             z_pc5_s |   .0097201   .0595249     0.16   0.870    -.1077931    .1272333
+             z_pc6_s |   .0123677   .0644393     0.19   0.848    -.1148474    .1395829
+             z_pc7_s |   .1324739   .0567203     2.34   0.021     .0204975    .2444502
+           m_e_avg_s |   .3098812   .0793659     3.90   0.000     .1531983    .4665641
+           m_f_avg_s |  -.3433924   .0932517    -3.68   0.000    -.5274886   -.1592962
+           lnprice_s |   .0287661   .1259818     0.23   0.820    -.2199452    .2774774
+         lnreviews_s |   -.328376   .1114921    -2.95   0.004     -.548482   -.1082699
+      has_discount_s |  -.0760588   .0673809    -1.13   0.261    -.2090811    .0569635
+     free_shipping_s |   .1819841   .0750286     2.43   0.016     .0338638    .3301044
+   ln_imperfection_s |  -.1139654   .0701127    -1.63   0.106    -.2523808      .02445
+ln_brand_avg_price_s |  -.0743294   .1109992    -0.67   0.504    -.2934624    .1448037
+       recency_inv_s |  -.0474934   .0584003    -0.81   0.417    -.1627864    .0677995
+               _cons |   .0746081   .0668779     1.12   0.266    -.0574213    .2066374
+--------------------------------------------------------------------------------------
 
 . est store r4
 
 . 
-. esttab r1 r2 r3 r4 using "stata/output/T7_robust_N185_v2.rtf", replace ///
+. esttab r1 r2 r3 r4 using "stata/output/T7_robust_N185.rtf", replace ///
 >     b(%6.3f) t(%6.2f) star(* 0.10 ** 0.05 *** 0.01) ///
 >     scalar(N r2 r2_a F) compress nogaps label ///
 >     mtitles("M_E" "M_F" "Y total" "Y full") ///
->     title("Table 7. Robustness: Subsample N=185 (n_reviews>=20)") nonotes
-(file stata/output/T7_robust_N185_v2.rtf not found)
-(output written to stata/output/T7_robust_N185_v2.rtf)
+>     title("Table 7. Robustness: Subsample N=185 (n_reviews>=20), Y=favorable-rate only") nonotes
+(output written to stata/output/T7_robust_N185.rtf)
 
 . 
 . 
 . *==============================================================================
-. * Part 8. 稳健性 - 5 个 Y 变体 (Table 8)
+. * Part 8. 稳健性 — 5 种 Y 变体 (现在把 composite 等作为稳健性对照)
 . *==============================================================================
-. use "data_anonymized/product_master.dta", clear
+. use "data/processed/product_master.dta", clear
 
-. global X "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
+. global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
-. global ME "m_e_avg_s"
+. global ME   "m_e_avg_s"
 
-. global MF "m_f_avg_s"
+. global MF   "m_f_avg_s"
 
-. global CTRL "lnprice_s lnreviews_s"
+. global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
 . 
-. reg y_50_50_s        $X $ME $MF $CTRL, vce(robust)
+. * Col 1: PRIMARY (favorable-rate only)
+. reg y_favrate_only_s   $X $ME $MF $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        200
-                                                F(11, 188)        =       7.42
+                                                F(16, 183)        =       9.89
                                                 Prob > F          =     0.0000
-                                                R-squared         =     0.2655
-                                                Root MSE          =     .88174
+                                                R-squared         =     0.3048
+                                                Root MSE          =     .86946
 
-------------------------------------------------------------------------------
-             |               Robust
-   y_50_50_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |  -.2679276   .0773377    -3.46   0.001    -.4204888   -.1153663
-     z_pc2_s |  -.2646862   .0696837    -3.80   0.000    -.4021486   -.1272237
-     z_pc3_s |  -.2133794   .0574016    -3.72   0.000    -.3266134   -.1001454
-     z_pc4_s |  -.2468789   .0742037    -3.33   0.001    -.3932578   -.1005001
-     z_pc5_s |   -.129639   .0597809    -2.17   0.031    -.2475666   -.0117115
-     z_pc6_s |  -.0697202   .0680577    -1.02   0.307    -.2039751    .0645346
-     z_pc7_s |    .062103   .0623034     1.00   0.320    -.0608005    .1850065
-   m_e_avg_s |   .2943022   .0665826     4.42   0.000     .1629571    .4256472
-   m_f_avg_s |  -.1932442   .0863526    -2.24   0.026    -.3635888   -.0228996
-   lnprice_s |  -.0753045   .0949589    -0.79   0.429    -.2626264    .1120175
- lnreviews_s |   .0765211   .1014507     0.75   0.452    -.1236069    .2766492
-       _cons |  -1.64e-09   .0623482    -0.00   1.000     -.122992     .122992
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+    y_favrate_only_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |   -.176183   .0788123    -2.24   0.027    -.3316805   -.0206854
+             z_pc2_s |  -.2572308   .0713674    -3.60   0.000    -.3980396    -.116422
+             z_pc3_s |  -.2242557    .065283    -3.44   0.001    -.3530599   -.0954515
+             z_pc4_s |  -.2250001   .0669189    -3.36   0.001     -.357032   -.0929683
+             z_pc5_s |  -.0142679   .0609192    -0.23   0.815    -.1344623    .1059265
+             z_pc6_s |  -.0338673   .0653737    -0.52   0.605    -.1628503    .0951158
+             z_pc7_s |   .0943207   .0607339     1.55   0.122    -.0255079    .2141493
+           m_e_avg_s |   .2493145   .0743857     3.35   0.001     .1025507    .3960783
+           m_f_avg_s |  -.2543373   .0887411    -2.87   0.005    -.4294244   -.0792501
+           lnprice_s |   .0933253   .1240805     0.75   0.453    -.1514869    .3381375
+         lnreviews_s |  -.1241279   .0842583    -1.47   0.142    -.2903705    .0421148
+      has_discount_s |  -.0998017   .0666859    -1.50   0.136    -.2313738    .0317704
+     free_shipping_s |   .1790757   .0699249     2.56   0.011      .041113    .3170384
+   ln_imperfection_s |  -.0843876   .0693246    -1.22   0.225    -.2211659    .0523908
+ln_brand_avg_price_s |  -.1648424   .1072037    -1.54   0.126    -.3763565    .0466717
+       recency_inv_s |  -.0631706   .0562928    -1.12   0.263    -.1742369    .0478956
+               _cons |   1.78e-08   .0614801     0.00   1.000    -.1213009    .1213009
+--------------------------------------------------------------------------------------
 
 . est store y1
 
-. reg y_30_70_s        $X $ME $MF $CTRL, vce(robust)
+. * Col 2-5: alternative operationalizations (now robustness)
+. reg y_50_50_s          $X $ME $MF $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        200
-                                                F(11, 188)        =       8.60
+                                                F(16, 183)        =       7.35
                                                 Prob > F          =     0.0000
-                                                R-squared         =     0.2553
-                                                Root MSE          =     .88782
+                                                R-squared         =     0.3077
+                                                Root MSE          =     .86767
 
-------------------------------------------------------------------------------
-             |               Robust
-   y_30_70_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |  -.2433869     .07779    -3.13   0.002    -.3968403   -.0899335
-     z_pc2_s |   -.273651   .0711142    -3.85   0.000    -.4139353   -.1333666
-     z_pc3_s |  -.2254474   .0611095    -3.69   0.000    -.3459958   -.1048989
-     z_pc4_s |  -.2348019   .0706587    -3.32   0.001    -.3741876   -.0954162
-     z_pc5_s |  -.0937278   .0605931    -1.55   0.124    -.2132574    .0258019
-     z_pc6_s |  -.0522252    .068387    -0.76   0.446    -.1871296    .0826792
-     z_pc7_s |   .0823869   .0631376     1.30   0.194    -.0421624    .2069361
-   m_e_avg_s |    .287031   .0705757     4.07   0.000      .147809    .4262531
-   m_f_avg_s |  -.2384416   .0888662    -2.68   0.008    -.4137447   -.0631386
-   lnprice_s |  -.0686816   .0938217    -0.73   0.465    -.2537602     .116397
- lnreviews_s |  -.0212624   .0942569    -0.23   0.822    -.2071995    .1646747
-       _cons |   2.60e-10   .0627785     0.00   1.000    -.1238408    .1238408
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+           y_50_50_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |  -.2623026   .0849418    -3.09   0.002    -.4298937   -.0947114
+             z_pc2_s |  -.2452814   .0713621    -3.44   0.001    -.3860796   -.1044832
+             z_pc3_s |  -.2256523   .0601016    -3.75   0.000    -.3442335    -.107071
+             z_pc4_s |  -.2646986   .0759583    -3.48   0.001    -.4145652   -.1148319
+             z_pc5_s |  -.1002506   .0594633    -1.69   0.094    -.2175724    .0170713
+             z_pc6_s |  -.0849154   .0662321    -1.28   0.201    -.2155921    .0457612
+             z_pc7_s |   .0441173   .0629521     0.70   0.484     -.080088    .1683226
+           m_e_avg_s |   .2776181   .0635801     4.37   0.000     .1521738    .4030624
+           m_f_avg_s |  -.1598593   .0816919    -1.96   0.052    -.3210383    .0013197
+           lnprice_s |   .0102636   .1159001     0.09   0.930    -.2184086    .2389358
+         lnreviews_s |   .1154075   .1036747     1.11   0.267    -.0891439    .3199589
+      has_discount_s |  -.1536822   .0721028    -2.13   0.034    -.2959418   -.0114226
+     free_shipping_s |    .097561   .0686643     1.42   0.157    -.0379146    .2330366
+   ln_imperfection_s |   .0070179   .0741882     0.09   0.925    -.1393563    .1533921
+ln_brand_avg_price_s |  -.0430341    .116231    -0.37   0.712    -.2723592     .186291
+       recency_inv_s |   -.086985   .0501724    -1.73   0.085    -.1859758    .0120058
+               _cons |  -1.87e-09   .0613536    -0.00   1.000    -.1210514    .1210514
+--------------------------------------------------------------------------------------
 
 . est store y2
 
-. reg y_70_30_s        $X $ME $MF $CTRL, vce(robust)
+. reg y_30_70_s          $X $ME $MF $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        200
-                                                F(11, 188)        =       6.39
+                                                F(16, 183)        =       8.44
                                                 Prob > F          =     0.0000
-                                                R-squared         =     0.2813
-                                                Root MSE          =     .87219
+                                                R-squared         =     0.3002
+                                                Root MSE          =     .87233
 
-------------------------------------------------------------------------------
-             |               Robust
-   y_70_30_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |  -.2787281   .0752588    -3.70   0.000    -.4271883   -.1302679
-     z_pc2_s |  -.2421474   .0670052    -3.61   0.000     -.374326   -.1099688
-     z_pc3_s |  -.1903687   .0537348    -3.54   0.000    -.2963692   -.0843681
-     z_pc4_s |  -.2462952   .0769034    -3.20   0.002    -.3979997   -.0945907
-     z_pc5_s |   -.158902   .0585479    -2.71   0.007    -.2743972   -.0434068
-     z_pc6_s |  -.0836398   .0665492    -1.26   0.210    -.2149189    .0476392
-     z_pc7_s |   .0386343   .0606847     0.64   0.525    -.0810761    .1583446
-   m_e_avg_s |   .2864805    .062836     4.56   0.000     .1625263    .4104348
-   m_f_avg_s |  -.1381365   .0834954    -1.65   0.100    -.3028447    .0265717
-   lnprice_s |  -.0780655   .0957993    -0.81   0.416    -.2670453    .1109143
- lnreviews_s |   .1703804   .1064618     1.60   0.111    -.0396328    .3803936
-       _cons |  -2.73e-09   .0616733    -0.00   1.000    -.1216606    .1216606
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+           y_30_70_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |  -.2326334   .0832351    -2.79   0.006    -.3968572   -.0684095
+             z_pc2_s |  -.2591564   .0720745    -3.60   0.000    -.4013603   -.1169525
+             z_pc3_s |  -.2328412   .0626007    -3.72   0.000    -.3563531   -.1093292
+             z_pc4_s |  -.2560032   .0726062    -3.53   0.001    -.3992561   -.1127503
+             z_pc5_s |  -.0650289    .060449    -1.08   0.283    -.1842956    .0542377
+             z_pc6_s |  -.0648841   .0663783    -0.98   0.330    -.1958492    .0660811
+             z_pc7_s |   .0682386   .0624362     1.09   0.276    -.0549487    .1914259
+           m_e_avg_s |   .2744983   .0684522     4.01   0.000     .1394413    .4095554
+           m_f_avg_s |  -.2079152   .0849193    -2.45   0.015     -.375462   -.0403684
+           lnprice_s |   .0479993   .1190441     0.40   0.687    -.1868761    .2828747
+         lnreviews_s |   .0116079   .0956121     0.12   0.904     -.177036    .2002518
+      has_discount_s |  -.1347585   .0697834    -1.93   0.055     -.272442     .002925
+     free_shipping_s |   .1376248   .0696972     1.97   0.050     .0001115    .2751381
+   ln_imperfection_s |   -.033874   .0718228    -0.47   0.638    -.1755813    .1078332
+ln_brand_avg_price_s |  -.0993421   .1111608    -0.89   0.373    -.3186638    .1199795
+       recency_inv_s |  -.0792813   .0536316    -1.48   0.141    -.1850971    .0265344
+               _cons |  -9.66e-10   .0616832    -0.00   1.000    -.1217018    .1217018
+--------------------------------------------------------------------------------------
 
 . est store y3
+
+. reg y_70_30_s          $X $ME $MF $CTRL, vce(robust)
+
+Linear regression                               Number of obs     =        200
+                                                F(16, 183)        =       6.20
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.3232
+                                                Root MSE          =     .85792
+
+--------------------------------------------------------------------------------------
+                     |               Robust
+           y_70_30_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |    -.27852   .0848953    -3.28   0.001    -.4460195   -.1110205
+             z_pc2_s |  -.2188276    .069675    -3.14   0.002    -.3562973   -.0813579
+             z_pc3_s |  -.2068912   .0577519    -3.58   0.000    -.3208364   -.0929459
+             z_pc4_s |  -.2598193   .0778446    -3.34   0.001    -.4134076    -.106231
+             z_pc5_s |   -.130331   .0581241    -2.24   0.026    -.2450106   -.0156514
+             z_pc6_s |  -.1005921   .0653083    -1.54   0.125    -.2294461     .028262
+             z_pc7_s |   .0177335   .0626793     0.28   0.778    -.1059336    .1414005
+           m_e_avg_s |   .2665006    .059564     4.47   0.000     .1489801    .3840212
+           m_f_avg_s |  -.1036053   .0789298    -1.31   0.191    -.2593348    .0521242
+           lnprice_s |  -.0279984   .1141689    -0.25   0.807     -.253255    .1972582
+         lnreviews_s |   .2132886   .1097004     1.94   0.053    -.0031515    .4297288
+      has_discount_s |  -.1647245    .073886    -2.23   0.027    -.3105025   -.0189464
+     free_shipping_s |    .052494   .0670768     0.78   0.435    -.0798493    .1848372
+   ln_imperfection_s |   .0475499   .0764105     0.62   0.535    -.1032089    .1983088
+ln_brand_avg_price_s |   .0154809   .1218117     0.13   0.899    -.2248551    .2558169
+       recency_inv_s |  -.0902278   .0460361    -1.96   0.052    -.1810576    .0006019
+               _cons |  -1.96e-09   .0606639    -0.00   1.000    -.1196906    .1196906
+--------------------------------------------------------------------------------------
+
+. est store y4
 
 . reg y_sentiment_only_s $X $ME $MF $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        200
-                                                F(11, 188)        =       4.84
+                                                F(16, 183)        =       4.27
                                                 Prob > F          =     0.0000
-                                                R-squared         =     0.3051
-                                                Root MSE          =     .85764
+                                                R-squared         =     0.3501
+                                                Root MSE          =     .84065
 
-------------------------------------------------------------------------------
-             |               Robust
-y_sentimen~s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |   -.271302   .0706298    -3.84   0.000    -.4106306   -.1319733
-     z_pc2_s |  -.1942274   .0623595    -3.11   0.002    -.3172417   -.0712132
-     z_pc3_s |  -.1458216    .050372    -2.89   0.004    -.2451886   -.0464545
-     z_pc4_s |  -.2265769    .078457    -2.89   0.004    -.3813461   -.0718076
-     z_pc5_s |   -.184684   .0566946    -3.26   0.001    -.2965233   -.0728446
-     z_pc6_s |  -.0952835   .0632184    -1.51   0.133     -.219992     .029425
-     z_pc7_s |   .0051729   .0578674     0.09   0.929    -.1089801    .1193258
-   m_e_avg_s |   .2542662   .0597377     4.26   0.000     .1364238    .3721086
-   m_f_avg_s |  -.0559144   .0801985    -0.70   0.487    -.2141191    .1022903
-   lnprice_s |  -.0756426    .096194    -0.79   0.433     -.265401    .1141158
- lnreviews_s |   .2791935   .1086637     2.57   0.011     .0648366    .4935504
-       _cons |   1.62e-09   .0606442     0.00   1.000    -.1196306    .1196306
-------------------------------------------------------------------------------
-
-. est store y4
-
-. reg y_favrate_only_s   $X $ME $MF $CTRL, vce(robust)
-
-Linear regression                               Number of obs     =        200
-                                                F(11, 188)        =      10.52
-                                                Prob > F          =     0.0000
-                                                R-squared         =     0.2538
-                                                Root MSE          =     .88875
-
-------------------------------------------------------------------------------
-             |               Robust
-y_favrate_~s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
--------------+----------------------------------------------------------------
-     z_pc1_s |  -.1927708   .0758531    -2.54   0.012    -.3424034   -.0431383
-     z_pc2_s |   -.264231   .0707787    -3.73   0.000    -.4038535   -.1246084
-     z_pc3_s |  -.2237693   .0648854    -3.45   0.001    -.3517663   -.0957723
-     z_pc4_s |  -.2010379   .0658446    -3.05   0.003    -.3309271   -.0711488
-     z_pc5_s |  -.0398615   .0607909    -0.66   0.513    -.1597815    .0800584
-     z_pc6_s |  -.0254777   .0669802    -0.38   0.704    -.1576071    .1066517
-     z_pc7_s |   .1023947   .0628373     1.63   0.105    -.0215622    .2263515
-   m_e_avg_s |   .2554895   .0748864     3.41   0.001     .1077639    .4032152
-   m_f_avg_s |  -.2788005   .0908855    -3.07   0.002    -.4580869   -.0995142
-   lnprice_s |   -.054791    .092264    -0.59   0.553    -.2367967    .1272148
- lnreviews_s |  -.1466526    .083483    -1.76   0.081    -.3113364    .0180312
-       _cons |   2.02e-08   .0628442     0.00   1.000    -.1239704    .1239704
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+                     |               Robust
+  y_sentiment_only_s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+---------------------+----------------------------------------------------------------
+             z_pc1_s |  -.2781468   .0822355    -3.38   0.001    -.4403984   -.1158952
+             z_pc2_s |  -.1676169   .0664947    -2.52   0.013    -.2988117   -.0364221
+             z_pc3_s |  -.1665927   .0557611    -2.99   0.003    -.2766101   -.0565754
+             z_pc4_s |  -.2334797   .0776835    -3.01   0.003    -.3867502   -.0802092
+             z_pc5_s |  -.1593744   .0562734    -2.83   0.005    -.2704024   -.0483464
+             z_pc6_s |  -.1132133   .0632094    -1.79   0.075    -.2379263    .0114996
+             z_pc7_s |  -.0179059   .0612265    -0.29   0.770    -.1387065    .1028948
+           m_e_avg_s |    .231543   .0573232     4.04   0.000     .1184437    .3446422
+           m_f_avg_s |  -.0225523     .07705    -0.29   0.770    -.1745729    .1294684
+           lnprice_s |  -.0755478   .1146752    -0.66   0.511    -.3018034    .1507077
+         lnreviews_s |   .3240232   .1131914     2.86   0.005     .1006952    .5473512
+      has_discount_s |  -.1663886   .0749077    -2.22   0.028    -.3141823   -.0185948
+     free_shipping_s |  -.0100919   .0646655    -0.16   0.876    -.1376778    .1174939
+   ln_imperfection_s |   .0965431   .0784158     1.23   0.220    -.0581723    .2512585
+ln_brand_avg_price_s |   .0903038   .1280369     0.71   0.482    -.1623146    .3429222
+       recency_inv_s |  -.0874946   .0409109    -2.14   0.034    -.1682124   -.0067769
+               _cons |   3.64e-09   .0594431     0.00   1.000     -.117282     .117282
+--------------------------------------------------------------------------------------
 
 . est store y5
 
@@ -1187,10 +1656,23 @@ y_favrate_~s | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
 . esttab y1 y2 y3 y4 y5 using "stata/output/T8_robust_Y_variants.rtf", replace ///
 >     b(%6.3f) t(%6.2f) star(* 0.10 ** 0.05 *** 0.01) ///
 >     scalar(N r2 r2_a F) compress nogaps label ///
->     mtitles("Y 50:50" "Y 30:70" "Y 70:30" "Y sent" "Y fav") ///
->     title("Table 8. Robustness: 5 Y composite variants (Y full model, N=200)") ///
->     addnote("Checks if M_E (+) and M_F (-) signs hold across different Y operationalizations.")
-(file stata/output/T8_robust_Y_variants.rtf not found)
+>     drop(z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s ///
+>          lnprice_s lnreviews_s has_discount_s free_shipping_s ///
+>          ln_imperfection_s ln_brand_avg_price_s recency_inv_s _cons) ///
+>     mtitles("Y favrate (PRIMARY)" "Y 50:50" "Y 30:70" "Y 70:30" "Y sentiment") ///
+>     title("Table 8. Alternative Y operationalizations (full controls, N=200)") ///
+>     addnote("Col 1 = primary source-separated outcome. Cols 2-5 = alternative operationalizations for robustness." ///
+>             "Checks if M_E (+) and M_F (-) signs hold across different Y definitions.")
 (output written to stata/output/T8_robust_Y_variants.rtf)
 
-
+. 
+. 
+. *==============================================================================
+. * 收尾
+. *==============================================================================
+. log close
+      name:  <unnamed>
+       log:  .\stata/output/main_analysis.log
+  log type:  text
+ closed on:  13 Jul 2026, 01:37:00
+------------------------------------------------------------------------------------------------------------------------------------

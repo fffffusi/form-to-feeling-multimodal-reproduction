@@ -1,309 +1,161 @@
-# Product visual form and customer satisfaction: multimodal evidence on affective premium and functional diagnosis
+# Product visual form and customer satisfaction
 
-This repository contains the public reproduction materials for the paper
-**From Form to Feeling: Multimodal Evidence on How Product Appearance Shapes
-Customer Satisfaction**. The release includes the anonymized product-level
-regression dataset, the Stata analysis script, the affective / functional
-lexicons and prompts, the LLM extraction scripts, the satisfaction
-construction script, the CLIP image / text encoding scripts, and the published
-fused-PCA loading matrix.
+Public files associated with the manuscript:
 
-Raw review text, product images, product-page screenshots, product URLs, user
-information, and original brand names are **not** released. Researchers can
-either (a) prepare their own data following the schema below and run the full
-pipeline, or (b) use `data_anonymized/` and `stata/` directly to reproduce the
-regression tables of the paper.
+> **Product visual form and customer satisfaction: multimodal evidence on affective value and functional diagnosis**
 
-## Repository Structure
+This repository contains the anonymized product-level data, analysis code, validation materials, dictionaries, prompts, visual outputs, and supplementary diagnostic scripts used in the study.
+
+## Repository structure
 
 ```text
-.
+AAA公开public/
+├── README.md
+├── requirements.txt
+│   └── Python dependencies
+│
 ├── data_anonymized/
-│   ├── product_master.csv          # Anonymized product-level master data, N=200
-│   └── product_master.dta          # Same data in Stata format
+│   ├── product_master.csv
+│   │   └── Anonymized product-level master data
+│   └── product_master.dta
+│       └── Stata version of the anonymized master data
+│
+├── data_validation/
+│   ├── extraction_coding_LLM.xlsx
+│   │   └── LLM coding results for construct validation
+│   ├── extraction_coding_coder1.csv
+│   │   └── Human coder 1 validation data
+│   ├── extraction_coding_coder2.csv
+│   │   └── Human coder 2 validation data
+│   └── sentiment_coding_validation.xlsx
+│       └── Human validation data for sentiment scoring
+│
+├── diagnostics/
+│   ├── cmb_harman_single_factor.csv
+│   │   └── Common-method diagnostic output
+│   └── run_mf_complete_robustness.py
+│       └── Functional-evaluation decomposition and robustness analysis
+│
 ├── lexicons/
-│   ├── kansei_dict.json            # 5-dimension affective lexicon
-│   ├── function_dict.json          # 7-dimension functional lexicon
-│   ├── degree_words.json           # Degree-word weights
-│   ├── negation_words.json         # Negation-word rules
-│   ├── kansei_extraction.txt       # Affective extraction prompt
-│   ├── function_extraction.txt     # Functional extraction prompt
-│   └── sentiment_score.txt         # Sentiment scoring prompt
+│   ├── kansei_dict.json
+│   │   └── Affective/Kansei dictionary
+│   ├── function_dict.json
+│   │   └── Functional-evaluation dictionary
+│   ├── degree_words.json
+│   │   └── Degree-word dictionary
+│   ├── negation_words.json
+│   │   └── Negation-word dictionary
+│   ├── kansei_extraction.txt
+│   │   └── LLM prompt for affective-evaluation extraction
+│   ├── function_extraction.txt
+│   │   └── LLM prompt for functional-evaluation extraction
+│   └── sentiment_score.txt
+│       └── LLM prompt for sentiment scoring
+│
 ├── scripts_extraction/
-│   ├── llm_sentiment_scoring.py
 │   ├── llm_extract_kansei.py
+│   │   └── Extracts affective evaluations from reviews
 │   ├── llm_extract_function.py
+│   │   └── Extracts functional evaluations from reviews
+│   ├── llm_sentiment_scoring.py
+│   │   └── Scores review-level sentiment
 │   └── compute_kansei_function_scores.py
+│       └── Aggregates review-level evaluations to product-level scores
+│
 ├── scripts_satisfaction/
 │   └── compute_product_satisfaction.py
+│       └── Constructs product-level satisfaction measures
+│
 ├── scripts_visual/
 │   ├── encode_clip_images.py
+│   │   └── Extracts CLIP image embeddings
 │   ├── encode_clip_text.py
-│   ├── produce_onehot.xlsx                       # Engineering one-hot coding sheet
-│   ├── fig7(a)_product_visual_pcs.csv            # 200 x 7 standardized PC scores
-│   └── fig7(b)_product_feature_contributions.csv # 27 x 7 fused-PCA loading matrix
+│   │   └── Computes image-text concept scores
+│   ├── produce_onehot.xlsx
+│   │   └── Engineering one-hot visual coding
+│   ├── fig7(a)_product_visual_pcs.csv
+│   │   └── Product-level visual principal-component scores
+│   └── fig7(b)_product_feature_contributions.csv
+│       └── Visual feature contributions and loading information
+│
 ├── scripts_stata_prep/
 │   ├── prepare_stata_data.py
+│   │   └── Prepares product-level data for Stata
 │   ├── fdr_correction.py
+│   │   └── Benjamini-Hochberg FDR correction
 │   └── common_method_and_diagnostic_checks.py
+│       └── Common-method and functional-evaluation diagnostics
+│
 └── stata/
     ├── main_analysis.do
+    │   └── Main regressions, indirect associations, robustness checks, and diagnostics
     └── main_analysis.log
+        └── Stata execution log
 ```
 
-## Data Availability and Privacy Boundary
+## Main analysis command
 
-The public dataset is product-level and anonymized. It does not contain raw
-review text, user nicknames, user avatars, product URLs, raw product images,
-shop names, or original brand names. The `brand` column in
-`data_anonymized/product_master.*` is a two-letter anonymized code used only
-for traceability within the research workflow.
+The main Stata script reads:
 
-`product_id` is formatted with an em dash, for example `1—1`, to avoid
-spreadsheet software converting product identifiers into dates. If you run
-custom scripts that expect a normal hyphen, normalize `—` to `-` before
-merging.
+```text
+data_anonymized/product_master.dta
+```
 
-## Expected Raw Review Excel Schema
-
-The full pipeline expects a cleaned review workbook with the following schema.
-The raw workbook itself is not released; researchers can prepare their own
-workbook with the same column names and types to run the pipeline end-to-end.
-
-| Column | Meaning | Required for |
-|---|---|---|
-| `excel文件名` | Source product file name beginning with the product code | product id fallback |
-| `commentId` | Review identifier | deduplication, LLM extraction, aggregation |
-| `no` | Product code, e.g. `1-1` | product id |
-| `brand` | Brand name or anonymized brand code | metadata only |
-| `price` | Product-page price | control variable |
-| `favorable rate` | Platform favorable rate | satisfaction construction |
-| `sales volume` | Product-page sales volume | optional robustness / control extension |
-| `productId` | Platform product id | raw traceability; not used in public regression |
-| `userNickName` | User nickname | not required for public analysis |
-| `userImgURL` | User avatar URL | not required for public analysis |
-| `buyCountText` | Purchase count text | not required for public analysis |
-| `commentDate` | Review date / time | optional time-control extension |
-| `commentData` | Cleaned review text | sentiment scoring and LLM extraction |
-
-For minimum reproduction of the text pipeline, the necessary columns are
-`no`, `commentId`, and `commentData`. To reconstruct satisfaction `Y`,
-`price`, `favorable rate`, and `brand` are also required.
-
-## Public Regression Reproduction (Path A)
-
-The simplest reproduction path uses the shipped anonymized product-level data:
-
-1. Open Stata (version 18 or compatible).
-2. Set the working directory to the repository root.
-3. Run:
+Run it from the repository root:
 
 ```stata
 do stata/main_analysis.do
 ```
 
-The script reads `data_anonymized/product_master.dta` and writes output tables
-to `stata/output/`. The released `stata/main_analysis.log` records a reference
-run after local temporary paths were removed.
-
-## Full Pipeline With User-Supplied Data (Path B)
-
-If you supply your own cleaned reviews and product images, place them as
-follows:
+The script writes analysis tables and diagnostic files to:
 
 ```text
-data/input/product_reviews_clean.xlsx
-data/images_1024/{product_id}.jpg
-models/openaiclip-vit-large-patch14/
-models/IDEA-CCNLTaiyi-CLIP-Roberta-large-326M-Chinese/
+stata/output/
 ```
 
-Then run the pipeline in this order:
+The analysis uses Stata 18 and the `estout` package:
+
+```stata
+ssc install estout, replace
+```
+
+## Python environment
+
+The Python scripts were developed with Python 3.10–3.12.
 
 ```bash
-python scripts_extraction/llm_sentiment_scoring.py
-python scripts_satisfaction/compute_product_satisfaction.py
-python scripts_extraction/llm_extract_kansei.py
-python scripts_extraction/llm_extract_function.py
-python scripts_extraction/compute_kansei_function_scores.py
-python scripts_visual/encode_clip_images.py
-python scripts_visual/encode_clip_text.py
+python -m venv .venv
 
-# Apply the published fused-PCA loadings (see "Fused-PCA reduction" below)
-# to produce data/processed/product_visual_pcs.csv with columns
-# product_id, z_pc1, z_pc2, ..., z_pc7.
+# Windows
+.venv\Scripts\activate
 
-python scripts_stata_prep/prepare_stata_data.py
-```
+# macOS/Linux
+source .venv/bin/activate
 
-`prepare_stata_data.py` produces `data/processed/product_master.dta`. The
-Stata script `main_analysis.do` automatically detects this file when the
-shipped `data_anonymized/product_master.dta` is absent, so the two paths share
-the same downstream analysis.
-
-The LLM scripts use the DashScope OpenAI-compatible API endpoint and ask for
-the API key at runtime. No API key is stored in code. Generated metadata
-files may contain local paths and timestamps; do not commit generated
-metadata, checkpoints, raw comments, or raw images if those contain
-restricted information.
-
-## Supplementary Diagnostics
-
-To reproduce the auxiliary common-method and functional-diagnostic checks, run:
-
-```bash
-python scripts_stata_prep/common_method_and_diagnostic_checks.py
-```
-
-The Harman single-factor test runs directly from
-`data_anonymized/product_master.csv`. The functional-polarity diagnostics require
-review-level functional extraction output generated from user-supplied reviews:
-
-```text
-data/extraction/llm_function_extractions.csv
-```
-
-When this review-level file is not present, the script reports the Harman test
-and skips the polarity diagnostics with an explanatory message.
-
-### Fused-PCA reduction
-
-Between the visual encoding step (`encode_clip_text.py`) and the Stata
-preparation step (`prepare_stata_data.py`), users must apply the published
-fused-PCA loadings to a standardized concatenated visual matrix
-(14 engineering one-hot + 8 image-PCA + 5 CLIP-text concept = 27 features per
-product).
-
-The figure-making PCA code is not released because the manuscript figures
-were manually adjusted for layout, but the loading matrix is provided in two
-machine-readable forms:
-
-* `scripts_visual/fig7(b)_product_feature_contributions.csv` — long-format
-  table of 27 features x 7 retained PCs, with per-feature standardized value,
-  loading, and per-product contribution. The `loading` column reproduces the
-  matrix used in the published regressions.
-* The same matrix is documented in the paper's **Appendix C, Table C.1
-  ("Full visual PCA loadings")**.
-
-Apply these loadings to the standardized 27-dim fused vector, then z-score
-each of the resulting 7 PCs to obtain `z_pc1`...`z_pc7`. Write the result to
-`data/processed/product_visual_pcs.csv` for use by `prepare_stata_data.py`.
-
-## Variable Construction Summary
-
-### Affective and functional mediators
-
-`llm_extract_kansei.py` extracts five affective evaluation dimensions
-(`ME1`-`ME5`) from review text. `llm_extract_function.py` extracts seven
-functional evaluation dimensions (`MF1`-`MF7`).
-`compute_kansei_function_scores.py` converts comment-level matches into
-product-level scores.
-
-The scoring rules are:
-
-```text
-Affective: final_value = (-1 if negated else 1) * polarity * degree_weight
-Function:  final_value = polarity * degree_weight
-```
-
-For functional dimensions, `polarity` is interpreted as the user's final
-semantic attitude, so negation is retained as metadata but not mechanically
-reversed. This handles cases such as "没有异味" being positive but
-"没有反应" being negative.
-
-### Satisfaction
-
-`compute_product_satisfaction.py` constructs five product-level satisfaction
-outcomes:
-
-```text
-Y_sentiment_only = sentiment_z
-Y_favrate_only   = favrate_z
-Y_50_50          = 0.5 * sentiment_z + 0.5 * favrate_z
-Y_30_70          = 0.3 * sentiment_z + 0.7 * favrate_z
-Y_70_30          = 0.7 * sentiment_z + 0.3 * favrate_z
-```
-
-`sentiment_z` is the z-score of product-level mean LLM sentiment. `favrate_z`
-is the z-score of the logit-transformed platform favorable rate.
-
-### Supplementary diagnostics
-
-`scripts_stata_prep/common_method_and_diagnostic_checks.py` produces auxiliary
-diagnostic outputs for the manuscript:
-
-```text
-diagnostics/cmb_harman_single_factor.csv
-diagnostics/mf_polarity_diagnostics.csv      # requires review-level functional extraction output
-diagnostics/mf_polarity_regressions.csv      # requires review-level functional extraction output
-```
-
-### Visual encoding
-
-The visual side uses three layers:
-
-1. `Engineering one-hot`: manually coded design attributes in
-   `scripts_visual/produce_onehot.xlsx`.
-2. `CLIP image embedding`: `encode_clip_images.py` extracts 768-dimensional
-   image embeddings using `openai/clip-vit-large-patch14`.
-3. `CLIP-text concept scoring`: `encode_clip_text.py` aligns product images
-   with affective concept prompts using the Taiyi Chinese CLIP text encoder.
-
-The final visual predictors used in regression are seven fused visual
-principal components (`z_pc1`-`z_pc7`). Instead of the figure-making PCA
-code, this repository ships the published PCA outputs needed for
-reproduction:
-
-```text
-scripts_visual/fig7(a)_product_visual_pcs.csv             # 200 x 7 standardized PC scores
-scripts_visual/fig7(b)_product_feature_contributions.csv  # 27 x 7 loading matrix
-```
-
-## Key Public Files
-
-### `data_anonymized/product_master.csv`
-
-This file contains the full product-level regression dataset:
-
-- `product_id`
-- `me1`-`me5`, `me1_z`-`me5_z`, `cov_me1`-`cov_me5`, `m_e_avg`, `m_e_avg_raw`
-- `mf1`-`mf7`, `mf1_z`-`mf7_z`, `cov_mf1`-`cov_mf7`, `m_f_avg`, `m_f_avg_raw`
-- `sentiment_mean`, `favorable_rate_raw`, `favorable_rate_logit`, `sentiment_z`, `favrate_z`
-- `y_sentiment_only`, `y_favrate_only`, `y_50_50`, `y_30_70`, `y_70_30`
-- `z_pc1`-`z_pc7`
-- `brand` (anonymized code), `price`, `n_reviews_total`
-
-### `scripts_visual/produce_onehot.xlsx`
-
-This workbook contains the engineering one-hot coding sheet and coding rule
-sheet. The public version retains product codes and design attributes but
-does not include raw product URLs, original brand names, or identifiable
-product images.
-
-## Software Requirements
-
-Install Python dependencies:
-
-```bash
 pip install -r requirements.txt
 ```
 
-For CLIP image encoding, install a CUDA-enabled PyTorch build if GPU
-acceleration is needed. Stata reproduction requires Stata 18 or a compatible
-version with `estout / esttab` installed.
+The LLM extraction scripts require an OpenAI-compatible API key. The CLIP scripts require the corresponding model weights and a suitable PyTorch installation. Raw review text, product images, private model files, and platform-identifying materials are not included because of data-access, brand, and platform-risk considerations.
 
-## Do Not Commit
+## Main product-level variables
 
-The following files should not be committed to a public repository:
+The anonymized master data include:
 
-- raw review workbook with user text or platform identifiers
-- raw or standardized product images
-- generated API checkpoints and metadata if they contain local paths
+- platform favorable-rate and alternative satisfaction measures;
+- aggregate affective evaluation `ME`;
+- aggregate functional evaluation `MF`;
+- affective subdimensions `ME1`–`ME5`;
+- functional subdimensions `MF1`–`MF7`;
+- visual components `PC1`–`PC7`;
+- log price and log review count;
+- discount and free-shipping indicators;
+- seller-reputation gap;
+- log brand-average price;
+- review recency.
 
-## Method References
+## References
 
-- Radford, A., Kim, J. W., Hallacy, C., Ramesh, A., Goh, G., Agarwal, S., Sastry, G., Askell, A., Mishkin, P., Clark, J., Krueger, G., & Sutskever, I. (2021). Learning transferable visual models from natural language supervision. *Proceedings of the 38th International Conference on Machine Learning*, 8748-8763. https://proceedings.mlr.press/v139/radford21a.html
-- Gilardi, F., Alizadeh, M., & Kubli, M. (2023). ChatGPT outperforms crowd workers for text-annotation tasks. *Proceedings of the National Academy of Sciences*, 120(30), e2305016120. https://doi.org/10.1073/pnas.2305016120
-- Abdi, H., & Williams, L. J. (2010). Principal component analysis. *WIREs Computational Statistics*, 2(4), 433-459. https://doi.org/10.1002/wics.101
-- Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate: A practical and powerful approach to multiple testing. *Journal of the Royal Statistical Society: Series B (Methodological)*, 57(1), 289-300. https://doi.org/10.1111/j.2517-6161.1995.tb02031.x
-- Hayes, A. F. (2017). *Introduction to mediation, moderation, and conditional process analysis: A regression-based approach* (2nd ed.). Guilford Press.
+- Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate: A practical and powerful approach to multiple testing. *Journal of the Royal Statistical Society: Series B*, 57(1), 289–300.
+- Radford, A., Kim, J. W., Hallacy, C., et al. (2021). Learning transferable visual models from natural language supervision. *Proceedings of the 38th International Conference on Machine Learning*.
+
+Please cite the associated manuscript when using these files.
