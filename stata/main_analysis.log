@@ -1,20 +1,20 @@
 ------------------------------------------------------------------------------------------------------------------------------------
       name:  <unnamed>
-       log:  .\stata/output/main_analysis.log
+       log:  stata/main_analysis.log
   log type:  text
- opened on:  13 Jul 2026, 01:20:31
+ opened on:  20 Jul 2026, 22:09:36
 
-. 
-. 
+.
+.
 . *==============================================================================
 . * Part 0. 加载 + 标准化
 . *==============================================================================
-. use "data/processed/product_master.dta", clear
+. use "data_anonymized/product_master.dta", clear
 
-. display "Loaded product_master.dta. N = " _N
-Loaded product_master.dta. N = 200
+. display "Loaded data_anonymized/product_master.dta. N = " _N
+Loaded data_anonymized/product_master.dta. N = 200
 
-. 
+.
 . * 控制变量 (ln transforms)
 . capture drop lnprice lnreviews
 
@@ -22,13 +22,13 @@ Loaded product_master.dta. N = 200
 
 . gen lnreviews = ln(n_reviews_total + 1)
 
-. 
+.
 . * 主分析样本标志
 . capture drop included_main
 
 . gen included_main = (n_reviews_total >= 20)
 
-. 
+.
 . * z-score 标准化所有变量
 . foreach v in y_50_50 y_30_70 y_70_30 y_sentiment_only y_favrate_only ///
 >              m_e_avg m_f_avg ///
@@ -45,7 +45,7 @@ Loaded product_master.dta. N = 200
   6.     }
   7. }
 
-. 
+.
 . * 变量标签
 . label var y_50_50_s              "Y satisfaction (50:50)"
 
@@ -89,23 +89,25 @@ Loaded product_master.dta. N = 200
 
 . label var recency_inv_s          "Review recency (inverse)"
 
-. 
+.
 . capture drop id
 
 . egen id = group(product_id)
 
-. 
-. save "data/processed/product_master.dta", replace
-file data/processed/product_master.dta saved
+.
+. tempfile analysis_data
 
-. 
-. 
+. save `analysis_data', replace
+(analysis data saved to temporary storage)
+
+.
+.
 . *==============================================================================
 . * Part 1. 描述统计 + 相关矩阵 + VIF
 . *==============================================================================
-. use "data/processed/product_master.dta", clear
+. use "data_anonymized/product_master.dta", clear
 
-. 
+.
 . ** 1.1 描述统计
 . estpost tabstat y_favrate_only y_50_50 y_sentiment_only m_e_avg m_f_avg ///
 >     z_pc1 z_pc2 z_pc3 z_pc4 z_pc5 z_pc6 z_pc7 ///
@@ -117,27 +119,27 @@ Summary statistics: count mean sd min p50 max
      for variables: y_favrate_only y_50_50 y_sentiment_only m_e_avg m_f_avg z_pc1 z_pc2 z_pc3 z_pc4 z_pc5 z_pc6 z_pc7 price n_review
 > s_total has_discount free_shipping ln_imperfection ln_brand_avg_price recency_inv
 
-             |  e(count)    e(mean)      e(sd)     e(min)     e(p50)     e(max) 
+             |  e(count)    e(mean)      e(sd)     e(min)     e(p50)     e(max)
 -------------+------------------------------------------------------------------
-y_favrate_~y |       200  -1.50e-11   1.002509   -2.12059  -.4030351    1.08911 
-     y_50_50 |       200  -1.00e-11   .8682147  -4.020129  -.0070837   1.031742 
-y_sentimen~y |       200   1.00e-11   1.002509  -6.543645   .2420673    .974373 
-     m_e_avg |       200   4.00e-11   .7467313  -2.088761  -.0309625   3.563842 
-     m_f_avg |       200  -1.00e-11   .7159976  -1.882477   .0764872   1.647466 
-       z_pc1 |       200   2.50e-11   .7547481  -2.069031   -.091125   1.530304 
-       z_pc2 |       200   2.50e-11   .7015103  -1.239877   -.195932   2.137874 
-       z_pc3 |       200  -1.00e-11   .5912369   -1.17378  -.1286707    2.45093 
-       z_pc4 |       200  -1.00e-11   .5289153  -1.178521  -.0870388   1.883779 
-       z_pc5 |       200  -1.00e-11   .4560233  -1.342878   .0128011   1.027442 
-       z_pc6 |       200  -5.00e-12   .4133795  -1.318471   -.001113   1.336583 
-       z_pc7 |       200  -1.50e-11   .3832814  -.9193593   .0391135   1.196787 
-       price |       200    1723.92   1547.841         58       1233       8388 
-n_reviews_~l |       200    209.755   204.1247          2      127.5        995 
-has_discount |       200        .74    .439735          0          1          1 
-free_shipp~g |       200        .71   .4549007          0          1          1 
-ln_imperfe~n |       200  -2.218527   2.037608   -4.60517  -1.560648   .9202828 
-ln_brand_a~e |       200    7.17543   .8232795   4.077537   7.372786   8.816853 
- recency_inv |       200   .0492857    .144054   .0009901   .0021209          1 
+y_favrate_~y |       200  -1.50e-11   1.002509   -2.12059  -.4030351    1.08911
+     y_50_50 |       200  -1.00e-11   .8682147  -4.020129  -.0070837   1.031742
+y_sentimen~y |       200   1.00e-11   1.002509  -6.543645   .2420673    .974373
+     m_e_avg |       200   4.00e-11   .7467313  -2.088761  -.0309625   3.563842
+     m_f_avg |       200  -1.00e-11   .7159976  -1.882477   .0764872   1.647466
+       z_pc1 |       200   2.50e-11   .7547481  -2.069031   -.091125   1.530304
+       z_pc2 |       200   2.50e-11   .7015103  -1.239877   -.195932   2.137874
+       z_pc3 |       200  -1.00e-11   .5912369   -1.17378  -.1286707    2.45093
+       z_pc4 |       200  -1.00e-11   .5289153  -1.178521  -.0870388   1.883779
+       z_pc5 |       200  -1.00e-11   .4560233  -1.342878   .0128011   1.027442
+       z_pc6 |       200  -5.00e-12   .4133795  -1.318471   -.001113   1.336583
+       z_pc7 |       200  -1.50e-11   .3832814  -.9193593   .0391135   1.196787
+       price |       200    1723.92   1547.841         58       1233       8388
+n_reviews_~l |       200    209.755   204.1247          2      127.5        995
+has_discount |       200        .74    .439735          0          1          1
+free_shipp~g |       200        .71   .4549007          0          1          1
+ln_imperfe~n |       200  -2.218527   2.037608   -4.60517  -1.560648   .9202828
+ln_brand_a~e |       200    7.17543   .8232795   4.077537   7.372786   8.816853
+ recency_inv |       200   .0492857    .144054   .0009901   .0021209          1
 
 . esttab using "stata/output/T1_descriptive.rtf", replace ///
 >     cells("count(fmt(0)) mean(fmt(3)) sd(fmt(3)) min(fmt(3)) p50(fmt(3)) max(fmt(3))") ///
@@ -145,7 +147,7 @@ ln_brand_a~e |       200    7.17543   .8232795   4.077537   7.372786   8.816853
 >     title("Table 1. Descriptive Statistics (N=200, primary Y = favorable-rate only)")
 (output written to stata/output/T1_descriptive.rtf)
 
-. 
+.
 . ** 1.2 相关矩阵 (主Y = y_favrate_only_s)
 . estpost correlate y_favrate_only_s y_50_50_s y_sentiment_only_s ///
 >     m_e_avg_s m_f_avg_s ///
@@ -153,231 +155,231 @@ ln_brand_a~e |       200    7.17543   .8232795   4.077537   7.372786   8.816853
 >     lnprice_s lnreviews_s has_discount_s free_shipping_s ///
 >     ln_imperfection_s ln_brand_avg_price_s recency_inv_s, matrix
 
-             |      e(b)     e(rho)       e(p)   e(count) 
+             |      e(b)     e(rho)       e(p)   e(count)
 -------------+--------------------------------------------
-y_favrate_~s |                                            
-y_favrate_~s |         1          1                   200 
-   y_50_50_s |  .8660415   .8660415   1.61e-61        200 
-y_sentimen~s |  .5000556   .5000556   4.74e-14        200 
-   m_e_avg_s |  .0489601   .0489601   .4911547        200 
-   m_f_avg_s | -.1377239  -.1377239   .0518016        200 
-     z_pc1_s | -.1969618  -.1969618    .005183        200 
-     z_pc2_s |  -.234795   -.234795   .0008181        200 
-     z_pc3_s | -.1104962  -.1104962   .1193208        200 
-     z_pc4_s | -.2114996  -.2114996   .0026437        200 
-     z_pc5_s | -.0514037  -.0514037   .4697536        200 
-     z_pc6_s | -.0546779  -.0546779   .4418989        200 
-     z_pc7_s |  .1209005   .1209005   .0881319        200 
-   lnprice_s |  .2334829   .2334829   .0008767        200 
- lnreviews_s | -.2222558  -.2222558   .0015608        200 
-has_discou~s | -.0261912  -.0261912   .7127684        200 
-free_shipp~s |   .244962    .244962   .0004723        200 
-ln_imperfe~s |  .0526082   .0526082   .4593962        200 
-ln_brand_a~s |   .154845    .154845   .0285725        200 
-recency_in~s | -.1620802  -.1620802   .0218494        200 
-y_50_50_s    |                                            
-   y_50_50_s |         1          1                   200 
-y_sentimen~s |  .8660415   .8660415   1.61e-61        200 
-   m_e_avg_s |  .1966146   .1966146   .0052641        200 
-   m_f_avg_s |  .0327829   .0327829    .644915        200 
-     z_pc1_s | -.2698824  -.2698824   .0001112        200 
-     z_pc2_s | -.2223905  -.2223905   .0015503        200 
-     z_pc3_s |  -.114792   -.114792   .1055369        200 
-     z_pc4_s | -.1958501  -.1958501   .0054468        200 
-     z_pc5_s | -.1454267  -.1454267    .039909        200 
-     z_pc6_s | -.0578511  -.0578511   .4158215        200 
-     z_pc7_s |  .0847358   .0847358   .2328767        200 
-   lnprice_s |  .2641924   .2641924   .0001567        200 
- lnreviews_s |  .0223939   .0223939   .7529499        200 
-has_discou~s | -.0406236  -.0406236   .5679053        200 
-free_shipp~s |  .1884147   .1884147   .0075433        200 
-ln_imperfe~s |  .0582307   .0582307   .4127638        200 
-ln_brand_a~s |   .223609    .223609   .0014581        200 
-recency_in~s | -.1300793  -.1300793   .0663759        200 
-y_sentimen~s |                                            
-y_sentimen~s |         1          1                   200 
-   m_e_avg_s |  .2915926   .2915926    .000028        200 
-   m_f_avg_s |  .1945065   .1945065   .0057818        200 
-     z_pc1_s | -.2704969  -.2704969   .0001071        200 
-     z_pc2_s | -.1504038  -.1504038   .0335194        200 
-     z_pc3_s | -.0883331  -.0883331   .2135654        200 
-     z_pc4_s | -.1277291  -.1277291   .0714778        200 
-     z_pc5_s | -.2004875  -.2004875   .0044202        200 
-     z_pc6_s |  -.045525   -.045525    .522096        200 
-     z_pc7_s |   .025869    .025869   .7161488        200 
-   lnprice_s |  .2241201   .2241201    .001421        200 
- lnreviews_s |  .2610439   .2610439   .0001888        200 
-has_discou~s | -.0441723  -.0441723   .5345484        200 
-free_shipp~s |  .0813879   .0813879    .251925        200 
-ln_imperfe~s |  .0482522   .0482522   .4974504        200 
-ln_brand_a~s |  .2324643   .2324643   .0009249        200 
-recency_in~s | -.0632279  -.0632279   .3737542        200 
-m_e_avg_s    |                                            
-   m_e_avg_s |         1          1                   200 
-   m_f_avg_s |  .5420893   .5420893   1.13e-16        200 
-     z_pc1_s | -.1050157  -.1050157   .1388913        200 
-     z_pc2_s | -.0175437  -.0175437   .8052418        200 
-     z_pc3_s |  .2370309   .2370309   .0007264        200 
-     z_pc4_s | -.0108948  -.0108948   .8783076        200 
-     z_pc5_s | -.0709524  -.0709524    .318091        200 
-     z_pc6_s |  -.038128   -.038128   .5919399        200 
-     z_pc7_s |   .065276    .065276   .3584435        200 
-   lnprice_s |   .140124    .140124   .0478152        200 
- lnreviews_s |  .2197731   .2197731   .0017666        200 
-has_discou~s | -.0100097  -.0100097   .8881269        200 
-free_shipp~s |  -.093709   -.093709   .1868869        200 
-ln_imperfe~s | -.0999703  -.0999703   .1589943        200 
-ln_brand_a~s |  .1226786   .1226786    .083522        200 
-recency_in~s |  .0234404   .0234404   .7418039        200 
-m_f_avg_s    |                                            
-   m_f_avg_s |         1          1                   200 
-     z_pc1_s |  .0127763   .0127763    .857499        200 
-     z_pc2_s | -.1017107  -.1017107   .1518264        200 
-     z_pc3_s | -.1156135  -.1156135   .1030498        200 
-     z_pc4_s | -.0446438  -.0446438   .5301909        200 
-     z_pc5_s |  -.009304   -.009304   .8959683        200 
-     z_pc6_s |  .0703253   .0703253   .3223983        200 
-     z_pc7_s | -.0046378  -.0046378   .9480323        200 
-   lnprice_s |  .1665246   .1665246   .0184366        200 
- lnreviews_s |  .3113462   .3113462   7.20e-06        200 
-has_discou~s |  .0457545   .0457545   .5199982        200 
-free_shipp~s | -.1706292  -.1706292   .0157059        200 
-ln_imperfe~s | -.3238282  -.3238282   2.90e-06        200 
-ln_brand_a~s |  .2062294   .2062294   .0033918        200 
-recency_in~s |  .1715819   .1715819   .0151251        200 
-z_pc1_s      |                                            
-     z_pc1_s |         1          1                   200 
-     z_pc2_s |         0          0          1        200 
-     z_pc3_s |         0          0          1        200 
-     z_pc4_s |         0          0          1        200 
-     z_pc5_s |         0          0          1        200 
-     z_pc6_s |         0          0          1        200 
-     z_pc7_s |         0          0          1        200 
-   lnprice_s | -.4340215  -.4340215   1.36e-10        200 
- lnreviews_s | -.0165086  -.0165086   .8165228        200 
-has_discou~s |  -.192584   -.192584   .0062932        200 
-free_shipp~s | -.1946221  -.1946221   .0057523        200 
-ln_imperfe~s |  .0100945   .0100945   .8871855        200 
-ln_brand_a~s | -.3711254  -.3711254   6.30e-08        200 
-recency_in~s | -.0382322  -.0382322   .5909276        200 
-z_pc2_s      |                                            
-     z_pc2_s |         1          1                   200 
-     z_pc3_s |  1.83e-08   1.83e-08   .9999998        200 
-     z_pc4_s | -1.83e-08  -1.83e-08   .9999998        200 
-     z_pc5_s |  2.11e-08   2.11e-08   .9999998        200 
-     z_pc6_s | -2.11e-08  -2.11e-08   .9999998        200 
-     z_pc7_s |  1.83e-08   1.83e-08   .9999998        200 
-   lnprice_s | -.2955481  -.2955481   .0000215        200 
- lnreviews_s |  .0724991   .0724991   .3076292        200 
-has_discou~s |  .0289431   .0289431    .684128        200 
-free_shipp~s |  .0079567   .0079567    .910965        200 
-ln_imperfe~s |  .0276813   .0276813    .697207        200 
-ln_brand_a~s | -.2568811  -.2568811   .0002408        200 
-recency_in~s |  .0161952   .0161952   .8199459        200 
-z_pc3_s      |                                            
-     z_pc3_s |         1          1                   200 
-     z_pc4_s | -1.05e-08  -1.05e-08   .9999999        200 
-     z_pc5_s |  1.05e-08   1.05e-08   .9999999        200 
-     z_pc6_s |  1.05e-08   1.05e-08   .9999999        200 
-     z_pc7_s |  1.05e-08   1.05e-08   .9999999        200 
-   lnprice_s | -.1653018  -.1653018    .019326        200 
- lnreviews_s | -.0778985  -.0778985   .2728981        200 
-has_discou~s | -.2261694  -.2261694   .0012806        200 
-free_shipp~s | -.0554193  -.0554193   .4357241        200 
-ln_imperfe~s |  .1170219   .1170219   .0988936        200 
-ln_brand_a~s | -.1728916  -.1728916   .0143574        200 
-recency_in~s |  .0040461   .0040461    .954655        200 
-z_pc4_s      |                                            
-     z_pc4_s |         1          1                   200 
-     z_pc5_s |         0          0          1        200 
-     z_pc6_s |         0          0          1        200 
-     z_pc7_s |         0          0          1        200 
-   lnprice_s | -.3379148  -.3379148   9.90e-07        200 
- lnreviews_s |  .2634767   .2634767   .0001635        200 
-has_discou~s | -.1653272  -.1653272   .0193071        200 
-free_shipp~s | -.0007938  -.0007938   .9910991        200 
-ln_imperfe~s |  .0209408   .0209408   .7685105        200 
-ln_brand_a~s | -.3410833  -.3410833   7.72e-07        200 
-recency_in~s |  .0271103   .0271103   .7031552        200 
-z_pc5_s      |                                            
-     z_pc5_s |         1          1                   200 
-     z_pc6_s |         0          0          1        200 
-     z_pc7_s |         0          0          1        200 
-   lnprice_s | -.0517692  -.0517692    .466597        200 
- lnreviews_s | -.0078757  -.0078757   .9118681        200 
-has_discou~s |  .0450326   .0450326   .5266122        200 
-free_shipp~s | -.1170125  -.1170125    .098921        200 
-ln_imperfe~s | -.0726619  -.0726619   .3065413        200 
-ln_brand_a~s | -.0464726  -.0464726   .5134626        200 
-recency_in~s |  .0997758   .0997758   .1598107        200 
-z_pc6_s      |                                            
-     z_pc6_s |         1          1                   200 
-     z_pc7_s | -1.05e-08  -1.05e-08   .9999999        200 
-   lnprice_s | -.3537987  -.3537987   2.76e-07        200 
- lnreviews_s |  .1311746   .1311746   .0641021        200 
-has_discou~s |  -.113509   -.113509   .1095154        200 
-free_shipp~s |  .0167012   .0167012   .8144207        200 
-ln_imperfe~s |  .0948326   .0948326   .1816336        200 
-ln_brand_a~s |  -.275108   -.275108   .0000806        200 
-recency_in~s | -.0667471  -.0667471   .3476911        200 
-z_pc7_s      |                                            
-     z_pc7_s |         1          1                   200 
-   lnprice_s | -.0270006  -.0270006   .7043001        200 
- lnreviews_s |  .0064362   .0064362   .9279277        200 
-has_discou~s | -.1311236  -.1311236   .0642066        200 
-free_shipp~s |  .0502657   .0502657   .4796564        200 
-ln_imperfe~s |  .1403031   .1403031   .0475283        200 
-ln_brand_a~s | -.0422686  -.0422686   .5523206        200 
-recency_in~s |  .0755216   .0755216    .287845        200 
-lnprice_s    |                                            
-   lnprice_s |         1          1                   200 
- lnreviews_s | -.1630056  -.1630056    .021097        200 
-has_discou~s |  .2348765   .2348765   .0008146        200 
-free_shipp~s | -.0053381  -.0053381   .9401994        200 
-ln_imperfe~s | -.2738986  -.2738986   .0000869        200 
-ln_brand_a~s |  .8398096   .8398096   1.99e-54        200 
-recency_in~s |  .1377857   .1377857   .0516956        200 
-lnreviews_s  |                                            
- lnreviews_s |         1          1                   200 
-has_discou~s |  .0585619   .0585619   .4101067        200 
-free_shipp~s | -.0462059  -.0462059   .5158855        200 
-ln_imperfe~s | -.1294601  -.1294601   .0676904        200 
-ln_brand_a~s | -.1124027  -.1124027     .11304        200 
-recency_in~s |  .1991279   .1991279   .0047015        200 
-has_discou~s |                                            
-has_discou~s |         1          1                   200 
-free_shipp~s | -.0271308  -.0271308   .7029413        200 
-ln_imperfe~s | -.1930647  -.1930647   .0061617        200 
-ln_brand_a~s |  .2198347   .2198347   .0017612        200 
-recency_in~s |  .1162057   .1162057   .1012858        200 
-free_shipp~s |                                            
-free_shipp~s |         1          1                   200 
-ln_imperfe~s |  .2355798   .2355798   .0007848        200 
-ln_brand_a~s |  .0274324   .0274324   .6997976        200 
-recency_in~s | -.1838655  -.1838655    .009155        200 
-ln_imperfe~s |                                            
-ln_imperfe~s |         1          1                   200 
-ln_brand_a~s | -.2684744  -.2684744   .0001211        200 
-recency_in~s | -.1920909  -.1920909   .0064307        200 
-ln_brand_a~s |                                            
-ln_brand_a~s |         1          1                   200 
-recency_in~s |  .1484158   .1484158   .0359591        200 
-recency_in~s |                                            
-recency_in~s |         1          1                   200 
+y_favrate_~s |
+y_favrate_~s |         1          1                   200
+   y_50_50_s |  .8660415   .8660415   1.61e-61        200
+y_sentimen~s |  .5000556   .5000556   4.74e-14        200
+   m_e_avg_s |  .0489601   .0489601   .4911547        200
+   m_f_avg_s | -.1377239  -.1377239   .0518016        200
+     z_pc1_s | -.1969618  -.1969618    .005183        200
+     z_pc2_s |  -.234795   -.234795   .0008181        200
+     z_pc3_s | -.1104962  -.1104962   .1193208        200
+     z_pc4_s | -.2114996  -.2114996   .0026437        200
+     z_pc5_s | -.0514037  -.0514037   .4697536        200
+     z_pc6_s | -.0546779  -.0546779   .4418989        200
+     z_pc7_s |  .1209005   .1209005   .0881319        200
+   lnprice_s |  .2334829   .2334829   .0008767        200
+ lnreviews_s | -.2222558  -.2222558   .0015608        200
+has_discou~s | -.0261912  -.0261912   .7127684        200
+free_shipp~s |   .244962    .244962   .0004723        200
+ln_imperfe~s |  .0526082   .0526082   .4593962        200
+ln_brand_a~s |   .154845    .154845   .0285725        200
+recency_in~s | -.1620802  -.1620802   .0218494        200
+y_50_50_s    |
+   y_50_50_s |         1          1                   200
+y_sentimen~s |  .8660415   .8660415   1.61e-61        200
+   m_e_avg_s |  .1966146   .1966146   .0052641        200
+   m_f_avg_s |  .0327829   .0327829    .644915        200
+     z_pc1_s | -.2698824  -.2698824   .0001112        200
+     z_pc2_s | -.2223905  -.2223905   .0015503        200
+     z_pc3_s |  -.114792   -.114792   .1055369        200
+     z_pc4_s | -.1958501  -.1958501   .0054468        200
+     z_pc5_s | -.1454267  -.1454267    .039909        200
+     z_pc6_s | -.0578511  -.0578511   .4158215        200
+     z_pc7_s |  .0847358   .0847358   .2328767        200
+   lnprice_s |  .2641924   .2641924   .0001567        200
+ lnreviews_s |  .0223939   .0223939   .7529499        200
+has_discou~s | -.0406236  -.0406236   .5679053        200
+free_shipp~s |  .1884147   .1884147   .0075433        200
+ln_imperfe~s |  .0582307   .0582307   .4127638        200
+ln_brand_a~s |   .223609    .223609   .0014581        200
+recency_in~s | -.1300793  -.1300793   .0663759        200
+y_sentimen~s |
+y_sentimen~s |         1          1                   200
+   m_e_avg_s |  .2915926   .2915926    .000028        200
+   m_f_avg_s |  .1945065   .1945065   .0057818        200
+     z_pc1_s | -.2704969  -.2704969   .0001071        200
+     z_pc2_s | -.1504038  -.1504038   .0335194        200
+     z_pc3_s | -.0883331  -.0883331   .2135654        200
+     z_pc4_s | -.1277291  -.1277291   .0714778        200
+     z_pc5_s | -.2004875  -.2004875   .0044202        200
+     z_pc6_s |  -.045525   -.045525    .522096        200
+     z_pc7_s |   .025869    .025869   .7161488        200
+   lnprice_s |  .2241201   .2241201    .001421        200
+ lnreviews_s |  .2610439   .2610439   .0001888        200
+has_discou~s | -.0441723  -.0441723   .5345484        200
+free_shipp~s |  .0813879   .0813879    .251925        200
+ln_imperfe~s |  .0482522   .0482522   .4974504        200
+ln_brand_a~s |  .2324643   .2324643   .0009249        200
+recency_in~s | -.0632279  -.0632279   .3737542        200
+m_e_avg_s    |
+   m_e_avg_s |         1          1                   200
+   m_f_avg_s |  .5420893   .5420893   1.13e-16        200
+     z_pc1_s | -.1050157  -.1050157   .1388913        200
+     z_pc2_s | -.0175437  -.0175437   .8052418        200
+     z_pc3_s |  .2370309   .2370309   .0007264        200
+     z_pc4_s | -.0108948  -.0108948   .8783076        200
+     z_pc5_s | -.0709524  -.0709524    .318091        200
+     z_pc6_s |  -.038128   -.038128   .5919399        200
+     z_pc7_s |   .065276    .065276   .3584435        200
+   lnprice_s |   .140124    .140124   .0478152        200
+ lnreviews_s |  .2197731   .2197731   .0017666        200
+has_discou~s | -.0100097  -.0100097   .8881269        200
+free_shipp~s |  -.093709   -.093709   .1868869        200
+ln_imperfe~s | -.0999703  -.0999703   .1589943        200
+ln_brand_a~s |  .1226786   .1226786    .083522        200
+recency_in~s |  .0234404   .0234404   .7418039        200
+m_f_avg_s    |
+   m_f_avg_s |         1          1                   200
+     z_pc1_s |  .0127763   .0127763    .857499        200
+     z_pc2_s | -.1017107  -.1017107   .1518264        200
+     z_pc3_s | -.1156135  -.1156135   .1030498        200
+     z_pc4_s | -.0446438  -.0446438   .5301909        200
+     z_pc5_s |  -.009304   -.009304   .8959683        200
+     z_pc6_s |  .0703253   .0703253   .3223983        200
+     z_pc7_s | -.0046378  -.0046378   .9480323        200
+   lnprice_s |  .1665246   .1665246   .0184366        200
+ lnreviews_s |  .3113462   .3113462   7.20e-06        200
+has_discou~s |  .0457545   .0457545   .5199982        200
+free_shipp~s | -.1706292  -.1706292   .0157059        200
+ln_imperfe~s | -.3238282  -.3238282   2.90e-06        200
+ln_brand_a~s |  .2062294   .2062294   .0033918        200
+recency_in~s |  .1715819   .1715819   .0151251        200
+z_pc1_s      |
+     z_pc1_s |         1          1                   200
+     z_pc2_s |         0          0          1        200
+     z_pc3_s |         0          0          1        200
+     z_pc4_s |         0          0          1        200
+     z_pc5_s |         0          0          1        200
+     z_pc6_s |         0          0          1        200
+     z_pc7_s |         0          0          1        200
+   lnprice_s | -.4340215  -.4340215   1.36e-10        200
+ lnreviews_s | -.0165086  -.0165086   .8165228        200
+has_discou~s |  -.192584   -.192584   .0062932        200
+free_shipp~s | -.1946221  -.1946221   .0057523        200
+ln_imperfe~s |  .0100945   .0100945   .8871855        200
+ln_brand_a~s | -.3711254  -.3711254   6.30e-08        200
+recency_in~s | -.0382322  -.0382322   .5909276        200
+z_pc2_s      |
+     z_pc2_s |         1          1                   200
+     z_pc3_s |  1.83e-08   1.83e-08   .9999998        200
+     z_pc4_s | -1.83e-08  -1.83e-08   .9999998        200
+     z_pc5_s |  2.11e-08   2.11e-08   .9999998        200
+     z_pc6_s | -2.11e-08  -2.11e-08   .9999998        200
+     z_pc7_s |  1.83e-08   1.83e-08   .9999998        200
+   lnprice_s | -.2955481  -.2955481   .0000215        200
+ lnreviews_s |  .0724991   .0724991   .3076292        200
+has_discou~s |  .0289431   .0289431    .684128        200
+free_shipp~s |  .0079567   .0079567    .910965        200
+ln_imperfe~s |  .0276813   .0276813    .697207        200
+ln_brand_a~s | -.2568811  -.2568811   .0002408        200
+recency_in~s |  .0161952   .0161952   .8199459        200
+z_pc3_s      |
+     z_pc3_s |         1          1                   200
+     z_pc4_s | -1.05e-08  -1.05e-08   .9999999        200
+     z_pc5_s |  1.05e-08   1.05e-08   .9999999        200
+     z_pc6_s |  1.05e-08   1.05e-08   .9999999        200
+     z_pc7_s |  1.05e-08   1.05e-08   .9999999        200
+   lnprice_s | -.1653018  -.1653018    .019326        200
+ lnreviews_s | -.0778985  -.0778985   .2728981        200
+has_discou~s | -.2261694  -.2261694   .0012806        200
+free_shipp~s | -.0554193  -.0554193   .4357241        200
+ln_imperfe~s |  .1170219   .1170219   .0988936        200
+ln_brand_a~s | -.1728916  -.1728916   .0143574        200
+recency_in~s |  .0040461   .0040461    .954655        200
+z_pc4_s      |
+     z_pc4_s |         1          1                   200
+     z_pc5_s |         0          0          1        200
+     z_pc6_s |         0          0          1        200
+     z_pc7_s |         0          0          1        200
+   lnprice_s | -.3379148  -.3379148   9.90e-07        200
+ lnreviews_s |  .2634767   .2634767   .0001635        200
+has_discou~s | -.1653272  -.1653272   .0193071        200
+free_shipp~s | -.0007938  -.0007938   .9910991        200
+ln_imperfe~s |  .0209408   .0209408   .7685105        200
+ln_brand_a~s | -.3410833  -.3410833   7.72e-07        200
+recency_in~s |  .0271103   .0271103   .7031552        200
+z_pc5_s      |
+     z_pc5_s |         1          1                   200
+     z_pc6_s |         0          0          1        200
+     z_pc7_s |         0          0          1        200
+   lnprice_s | -.0517692  -.0517692    .466597        200
+ lnreviews_s | -.0078757  -.0078757   .9118681        200
+has_discou~s |  .0450326   .0450326   .5266122        200
+free_shipp~s | -.1170125  -.1170125    .098921        200
+ln_imperfe~s | -.0726619  -.0726619   .3065413        200
+ln_brand_a~s | -.0464726  -.0464726   .5134626        200
+recency_in~s |  .0997758   .0997758   .1598107        200
+z_pc6_s      |
+     z_pc6_s |         1          1                   200
+     z_pc7_s | -1.05e-08  -1.05e-08   .9999999        200
+   lnprice_s | -.3537987  -.3537987   2.76e-07        200
+ lnreviews_s |  .1311746   .1311746   .0641021        200
+has_discou~s |  -.113509   -.113509   .1095154        200
+free_shipp~s |  .0167012   .0167012   .8144207        200
+ln_imperfe~s |  .0948326   .0948326   .1816336        200
+ln_brand_a~s |  -.275108   -.275108   .0000806        200
+recency_in~s | -.0667471  -.0667471   .3476911        200
+z_pc7_s      |
+     z_pc7_s |         1          1                   200
+   lnprice_s | -.0270006  -.0270006   .7043001        200
+ lnreviews_s |  .0064362   .0064362   .9279277        200
+has_discou~s | -.1311236  -.1311236   .0642066        200
+free_shipp~s |  .0502657   .0502657   .4796564        200
+ln_imperfe~s |  .1403031   .1403031   .0475283        200
+ln_brand_a~s | -.0422686  -.0422686   .5523206        200
+recency_in~s |  .0755216   .0755216    .287845        200
+lnprice_s    |
+   lnprice_s |         1          1                   200
+ lnreviews_s | -.1630056  -.1630056    .021097        200
+has_discou~s |  .2348765   .2348765   .0008146        200
+free_shipp~s | -.0053381  -.0053381   .9401994        200
+ln_imperfe~s | -.2738986  -.2738986   .0000869        200
+ln_brand_a~s |  .8398096   .8398096   1.99e-54        200
+recency_in~s |  .1377857   .1377857   .0516956        200
+lnreviews_s  |
+ lnreviews_s |         1          1                   200
+has_discou~s |  .0585619   .0585619   .4101067        200
+free_shipp~s | -.0462059  -.0462059   .5158855        200
+ln_imperfe~s | -.1294601  -.1294601   .0676904        200
+ln_brand_a~s | -.1124027  -.1124027     .11304        200
+recency_in~s |  .1991279   .1991279   .0047015        200
+has_discou~s |
+has_discou~s |         1          1                   200
+free_shipp~s | -.0271308  -.0271308   .7029413        200
+ln_imperfe~s | -.1930647  -.1930647   .0061617        200
+ln_brand_a~s |  .2198347   .2198347   .0017612        200
+recency_in~s |  .1162057   .1162057   .1012858        200
+free_shipp~s |
+free_shipp~s |         1          1                   200
+ln_imperfe~s |  .2355798   .2355798   .0007848        200
+ln_brand_a~s |  .0274324   .0274324   .6997976        200
+recency_in~s | -.1838655  -.1838655    .009155        200
+ln_imperfe~s |
+ln_imperfe~s |         1          1                   200
+ln_brand_a~s | -.2684744  -.2684744   .0001211        200
+recency_in~s | -.1920909  -.1920909   .0064307        200
+ln_brand_a~s |
+ln_brand_a~s |         1          1                   200
+recency_in~s |  .1484158   .1484158   .0359591        200
+recency_in~s |
+recency_in~s |         1          1                   200
 
 . esttab using "stata/output/T1B_correlations.rtf", replace ///
 >     unstack not noobs nonumber compress label ///
 >     title("Table 1B. Pearson Correlations (standardized; Y = favorable-rate only)") b(%6.3f)
 (output written to stata/output/T1B_correlations.rtf)
 
-. 
+.
 . ** 1.3 VIF 多重共线性诊断 (3 个关键规格 + 导出)
 . *    阈值: VIF < 5 良好, 5-10 可接受, > 10 严重共线性需处理
 . *    检查规格:
 . *      (a) 仅控制变量 — 检查新增控制变量之间是否共线
 . *      (b) 全中介模型 (PCs + ME + MF + 控制变量) — 主回归的共线性
 . *      (c) 维度分解 (7 PCs + 12 mediators + 控制变量) — 共线性最严重的规格
-. 
+.
 . display ""
 
 
@@ -390,7 +392,7 @@ recency_in~s |         1          1                   200
 . display "========================================"
 ========================================
 
-. 
+.
 . * --- 导出 VIF 结果到 CSV ---
 . capture file close vif_fh
 
@@ -398,7 +400,7 @@ recency_in~s |         1          1                   200
 
 . file write vif_fh "spec,variable,vif,1/vif,flag" _n
 
-. 
+.
 . * --- (a) 仅 7 个控制变量 ---
 . display ""
 
@@ -431,7 +433,7 @@ ln_brand_avg_price_s |  -.1336447   .1223011    -1.09   0.276     -.374871    .1
 
 . estat vif
 
-    Variable |       VIF       1/VIF  
+    Variable |       VIF       1/VIF
 -------------+----------------------
    lnprice_s |      3.53    0.283001
 ln_brand_a~s |      3.45    0.289794
@@ -460,7 +462,7 @@ has_discou~s |      1.09    0.917946
   9.     file write vif_fh "(a)controls,`v'," %9.4f (_vif_val) "," %9.4f (_vif_inv) ",`_flag'" _n
  10. }
 
-. 
+.
 . * --- (b) 全中介模型 (主回归 Table 5 column 4) ---
 . display ""
 
@@ -503,7 +505,7 @@ ln_brand_avg_price_s |  -.1648424   .1166017    -1.41   0.159    -.3948988    .0
 
 . estat vif
 
-    Variable |       VIF       1/VIF  
+    Variable |       VIF       1/VIF
 -------------+----------------------
    lnprice_s |      4.65    0.214840
 ln_brand_a~s |      3.58    0.279406
@@ -541,7 +543,7 @@ free_shipp~s |      1.18    0.849174
   9.     file write vif_fh "(b)full_mediation,`v'," %9.4f (_vif_val) "," %9.4f (_vif_inv) ",`_flag'" _n
  10. }
 
-. 
+.
 . * --- (c) 维度分解 (Table 7, 共线性最严重: 7PCs + 12mediators + 7controls) ---
 . display ""
 
@@ -596,7 +598,7 @@ ln_brand_avg_price_s |   -.149287   .1138563    -1.31   0.192    -.3740132    .0
 
 . estat vif
 
-    Variable |       VIF       1/VIF  
+    Variable |       VIF       1/VIF
 -------------+----------------------
    lnprice_s |      4.92    0.203299
      mf1_z_s |      4.16    0.240427
@@ -646,7 +648,7 @@ free_shipp~s |      1.26    0.795698
   9.     file write vif_fh "(c)decomposition,`v'," %9.4f (_vif_val) "," %9.4f (_vif_inv) ",`_flag'" _n
  10. }
 
-. 
+.
 . file close vif_fh
 
 . display ""
@@ -658,14 +660,14 @@ VIF 表已导出: stata/output/VIF_diagnostics.csv
 . display "阈值参考: VIF<5 良好, 5-10 可接受, >=10 严重"
 阈值参考: VIF<5 良好, 5-10 可接受, >=10 严重
 
-. 
-. 
+.
+.
 . *==============================================================================
 . * Part 2. 主中介 4 列回归 (Y = y_favrate_only_s)
 . *==============================================================================
-. use "data/processed/product_master.dta", clear
+. use "data_anonymized/product_master.dta", clear
 
-. 
+.
 . global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
 . global ME   "m_e_avg_s"
@@ -676,7 +678,7 @@ VIF 表已导出: stata/output/VIF_diagnostics.csv
 
 . global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
-. 
+.
 . * (1) X -> M_E
 . reg $ME $X $CTRL, vce(robust)
 
@@ -709,7 +711,7 @@ ln_brand_avg_price_s |   .0481503   .1095675     0.44   0.661    -.1680121    .2
 
 . est store m1_aE
 
-. 
+.
 . * (2) X -> M_F
 . reg $MF $X $CTRL, vce(robust)
 
@@ -742,7 +744,7 @@ ln_brand_avg_price_s |   .1591238   .1055332     1.51   0.133    -.0490795    .3
 
 . est store m2_aF
 
-. 
+.
 . * (3) X -> Y (总效应 c)
 . reg $Y $X $CTRL, vce(robust)
 
@@ -775,7 +777,7 @@ ln_brand_avg_price_s |  -.1933089    .105026    -1.84   0.067    -.4005116    .0
 
 . est store m3_total
 
-. 
+.
 . * (4) X + M_E + M_F -> Y (满模型 c'+b)
 . reg $Y $X $ME $MF $CTRL, vce(robust)
 
@@ -810,7 +812,7 @@ ln_brand_avg_price_s |  -.1648424   .1072037    -1.54   0.126    -.3763565    .0
 
 . est store m4_full
 
-. 
+.
 . esttab m1_aE m2_aF m3_total m4_full ///
 >     using "stata/output/T3_main_mediation.rtf", replace ///
 >     b(%6.3f) t(%6.2f) star(* 0.10 ** 0.05 *** 0.01) ///
@@ -818,17 +820,17 @@ ln_brand_avg_price_s |  -.1648424   .1072037    -1.54   0.126    -.3763565    .0
 >     mtitles("M_E (a-path)" "M_F (a-path)" "Y total (c)" "Y full (c'+b)") ///
 >     title("Table 3. Main Parallel Mediation — Y = favorable-rate only (N=200)") ///
 >     addnote("Primary outcome: platform favorable rate (logit-transformed, z-scored)." ///
->             "Source-separated from text-extracted mediators ." ///
+>             "The outcome does not share a text source with the extracted evaluations." ///
 >             "Full control specification. Robust SE in parentheses." ///
 >             "*** p<0.01, ** p<0.05, * p<0.10")
 (output written to stata/output/T3_main_mediation.rtf)
 
-. 
-. 
+.
+.
 . *==============================================================================
 . * Part 3. Parallel Bootstrap — 14 indirect + 总效应 + 路径强弱比较
 . *==============================================================================
-. use "data/processed/product_master.dta", clear
+. use "data_anonymized/product_master.dta", clear
 
 . global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
@@ -840,36 +842,38 @@ ln_brand_avg_price_s |  -.1648424   .1072037    -1.54   0.126    -.3763565    .0
 
 . global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
-. 
+.
 . capture program drop med_parallel
 
 . program med_parallel, rclass
-  1.     sem ($ME <- $X $CTRL) ///
+  1.     syntax [if] [in]
+  2.     marksample touse
+  3.     sem ($ME <- $X $CTRL) ///
 >         ($MF <- $X $CTRL) ///
->         ($Y  <- $X $ME $MF $CTRL)
-  2. 
+>         ($Y  <- $X $ME $MF $CTRL) if `touse'
+  4.
 .     forvalues i = 1/7 {
-  3.         scalar aE`i' = _b[$ME:z_pc`i'_s]
-  4.         scalar aF`i' = _b[$MF:z_pc`i'_s]
-  5.     }
-  6.     scalar bE = _b[$Y:$ME]
-  7.     scalar bF = _b[$Y:$MF]
-  8. 
+  5.         scalar aE`i' = _b[$ME:z_pc`i'_s]
+  6.         scalar aF`i' = _b[$MF:z_pc`i'_s]
+  7.     }
+  8.     scalar bE = _b[$Y:$ME]
+  9.     scalar bF = _b[$Y:$MF]
+ 10.
 .     forvalues i = 1/7 {
-  9.         return scalar indE_pc`i' = aE`i' * bE
- 10.         return scalar indF_pc`i' = aF`i' * bF
- 11.     }
- 12. 
+ 11.         return scalar indE_pc`i' = aE`i' * bE
+ 12.         return scalar indF_pc`i' = aF`i' * bF
+ 13.     }
+ 14.
 .     scalar tE = abs(aE1*bE)+abs(aE2*bE)+abs(aE3*bE)+abs(aE4*bE)+abs(aE5*bE)+abs(aE6*bE)+abs(aE7*bE)
- 13.     scalar tF = abs(aF1*bF)+abs(aF2*bF)+abs(aF3*bF)+abs(aF4*bF)+abs(aF5*bF)+abs(aF6*bF)+abs(aF7*bF)
- 14.     return scalar totE_abs = tE
- 15.     return scalar totF_abs = tF
- 16.     return scalar diff_EF  = tE - tF
- 17.     return scalar bE = bE
- 18.     return scalar bF = bF
- 19. end
+ 15.     scalar tF = abs(aF1*bF)+abs(aF2*bF)+abs(aF3*bF)+abs(aF4*bF)+abs(aF5*bF)+abs(aF6*bF)+abs(aF7*bF)
+ 16.     return scalar totE_abs = tE
+ 17.     return scalar totF_abs = tF
+ 18.     return scalar diff_EF  = tE - tF
+ 19.     return scalar bE = bE
+ 20.     return scalar bF = bF
+ 21. end
 
-. 
+.
 . bootstrap ///
 >     indE_pc1=r(indE_pc1) indE_pc2=r(indE_pc2) indE_pc3=r(indE_pc3) ///
 >     indE_pc4=r(indE_pc4) indE_pc5=r(indE_pc5) indE_pc6=r(indE_pc6) indE_pc7=r(indE_pc7) ///
@@ -877,8 +881,13 @@ ln_brand_avg_price_s |  -.1648424   .1072037    -1.54   0.126    -.3763565    .0
 >     indF_pc4=r(indF_pc4) indF_pc5=r(indF_pc5) indF_pc6=r(indF_pc6) indF_pc7=r(indF_pc7) ///
 >     bE=r(bE) bF=r(bF) ///
 >     totE_abs=r(totE_abs) totF_abs=r(totF_abs) diff_EF=r(diff_EF), ///
->     reps(5000) seed(42): med_parallel
+>     reps(5000) seed(42) bca ties ///
+>     saving("stata/output/bootstrap_parallel.dta", replace): med_parallel
 (running med_parallel on estimation sample)
+
+Jackknife replications (200): .........10.........20.........30.........40.........50.........60.........70.........80.........90...
+> ......100.........110.........120.........130.........140.........150.........160.........170.........180.........190.........200
+> done
 
 Bootstrap replications (5,000): .........10.........20.........30.........40.........50.........60.........70.........80.........90.
 > ........100.........110.........120.........130.........140.........150.........160.........170.........180.........190.........20
@@ -983,23 +992,105 @@ Bootstrap results                                        Number of obs =   200
      diff_EF |   .0256122   .0777911     0.33   0.742    -.1268556    .1780801
 ------------------------------------------------------------------------------
 
-. est store boot_indirect
+. est store boot_parallel
 
-. 
-. esttab boot_indirect using "stata/output/T4_indirect_effects.rtf", replace ///
->     b(%7.4f) ci(%7.4f) star(* 0.10 ** 0.05 *** 0.01) ///
->     title("Table 4. Parallel Indirect Effects — Y = favorable-rate only") ///
->     label nonotes addnote("5000 Bootstrap reps. CI = percentile 2.5/97.5." ///
->         "totE_abs / totF_abs: sum of |a x b| across 7 PCs." ///
->         "diff_EF > 0 (CI not crossing 0) = kansei path stronger than function.")
-(output written to stata/output/T4_indirect_effects.rtf)
+.
+. * Report genuine percentile and BCa confidence intervals.
+. * Do not use esttab, ci() here: it reports the default normal-based interval.
+. log using "stata/output/T4_indirect_effects.txt", ///
+>     name(bootci_parallel) replace text
+(file stata/output/T4_indirect_effects.txt not found)
+------------------------------------------------------------------------------------------------------------------------------------
+      name:  bootci_parallel
+       log:  stata/output/T4_indirect_effects.txt
+  log type:  text
+ opened on:  20 Jul 2026, 22:23:57
 
-. 
-. 
+. estat bootstrap, percentile bca
+
+Bootstrap results                               Number of obs     =        200
+                                                Replications      =       5000
+
+      Command: med_parallel
+     indE_pc1: r(indE_pc1)
+     indE_pc2: r(indE_pc2)
+     indE_pc3: r(indE_pc3)
+     indE_pc4: r(indE_pc4)
+     indE_pc5: r(indE_pc5)
+     indE_pc6: r(indE_pc6)
+     indE_pc7: r(indE_pc7)
+     indF_pc1: r(indF_pc1)
+     indF_pc2: r(indF_pc2)
+     indF_pc3: r(indF_pc3)
+     indF_pc4: r(indF_pc4)
+     indF_pc5: r(indF_pc5)
+     indF_pc6: r(indF_pc6)
+     indF_pc7: r(indF_pc7)
+           bE: r(bE)
+           bF: r(bF)
+     totE_abs: r(totE_abs)
+     totF_abs: r(totF_abs)
+      diff_EF: r(diff_EF)
+
+------------------------------------------------------------------------------
+             |    Observed               Bootstrap
+             | coefficient       Bias    std. err.  [95% conf. interval]
+-------------+----------------------------------------------------------------
+    indE_pc1 |  -.00342852   .0005188   .02576816   -.0566136   .0489075   (P)
+             |                                      -.0640094   .0434359 (BCa)
+    indE_pc2 |   .00967429   .0031098   .02417749   -.0294153   .0686205   (P)
+             |                                      -.0321688   .0633439 (BCa)
+    indE_pc3 |   .07517917   .0046017   .03521956    .0228071    .159794   (P)
+             |                                       .0213911   .1559467 (BCa)
+    indE_pc4 |   .00063044   .0028862   .02161749   -.0377353   .0500878   (P)
+             |                                      -.0483095   .0406978 (BCa)
+    indE_pc5 |  -.01479817   .0003201   .01602522   -.0488901   .0155596   (P)
+             |                                      -.0514741   .0128154 (BCa)
+    indE_pc6 |   .00236374   .0000388   .01836442   -.0340335   .0396178   (P)
+             |                                      -.0335125   .0398959 (BCa)
+    indE_pc7 |   .02202639   .0001754   .01999559   -.0136262   .0645889   (P)
+             |                                      -.0101953   .0710953 (BCa)
+    indF_pc1 |  -.01952863  -.0024673   .02264204   -.0758849   .0153637   (P)
+             |                                      -.0751448   .0156301 (BCa)
+    indF_pc2 |   .01460604  -.0002857   .01843663   -.0201505   .0534921   (P)
+             |                                      -.0169353   .0579102 (BCa)
+    indF_pc3 |   .01213854  -.0032533   .01860346   -.0327291   .0427148   (P)
+             |                                      -.0235022   .0493117 (BCa)
+    indF_pc4 |   .01421779  -.0011533   .01894087   -.0245437   .0524014   (P)
+             |                                      -.0187346   .0587726 (BCa)
+    indF_pc5 |   .00634137   .0020524   .01703234   -.0213356   .0463671   (P)
+             |                                      -.0226301   .0441357 (BCa)
+    indF_pc6 |  -.02895548  -.0010818   .02002651   -.0743225   .0024481   (P)
+             |                                      -.0759974   .0019557 (BCa)
+    indF_pc7 |  -.00670066  -.0011658    .0207351   -.0520217   .0318981   (P)
+             |                                      -.0487431   .0353301 (BCa)
+          bE |   .24931454   .0118424   .07937079    .1130758   .4244065   (P)
+             |                                       .0944194   .4002904 (BCa)
+          bF |  -.25433728  -.0109597   .09041661    -.456607  -.0972349   (P)
+             |                                      -.4218738  -.0673868 (BCa)
+    totE_abs |   .12810073   .0642022   .07749207    .0701817   .3668457   (P)
+             |                                       .0126156   .2053399 (BCa)
+    totF_abs |   .10248851   .0362537   .05698571    .0472397   .2692279   (P)
+             |                                        .005939   .1734396 (BCa)
+     diff_EF |   .02561221   .0279485   .07779114   -.0891001   .2184563   (P)
+             |                                      -.1624782    .149995 (BCa)
+------------------------------------------------------------------------------
+Key:   P: Percentile
+     BCa: Bias-corrected and accelerated (adjusted for ties)
+
+. log close bootci_parallel
+      name:  bootci_parallel
+       log:  stata/output/T4_indirect_effects.txt
+  log type:  text
+ closed on:  20 Jul 2026, 22:23:57
+------------------------------------------------------------------------------------------------------------------------------------
+
+.
+.
 . *==============================================================================
 . * Part 4. Serial Mediation Path A: Visual -> M_E -> M_F -> Y
 . *==============================================================================
-. use "data/processed/product_master.dta", clear
+. use "data_anonymized/product_master.dta", clear
 
 . global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
@@ -1011,38 +1102,46 @@ Bootstrap results                                        Number of obs =   200
 
 . global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
-. 
-. capture program drop serial_A
+.
+. capture program drop serialA
 
-. program serial_A, rclass
-  1.     sem ($ME <- $X $CTRL) ///
+. program serialA, rclass
+  1.     syntax [if] [in]
+  2.     marksample touse
+  3.     sem ($ME <- $X $CTRL) ///
 >         ($MF <- $X $ME $CTRL) ///
->         ($Y  <- $X $ME $MF $CTRL)
-  2. 
+>         ($Y  <- $X $ME $MF $CTRL) if `touse'
+  4.
 .     scalar d_EF  = _b[$MF:$ME]
-  3.     scalar bF_A  = _b[$Y:$MF]
-  4.     scalar bE_A  = _b[$Y:$ME]
-  5. 
+  5.     scalar bF_A  = _b[$Y:$MF]
+  6.     scalar bE_A  = _b[$Y:$ME]
+  7.
 .     forvalues i = 1/7 {
-  6.         scalar aE`i' = _b[$ME:z_pc`i'_s]
-  7.         return scalar serialA_pc`i' = aE`i' * d_EF * bF_A
-  8.     }
-  9. 
+  8.         scalar aE`i' = _b[$ME:z_pc`i'_s]
+  9.         return scalar serialA_pc`i' = aE`i' * d_EF * bF_A
+ 10.     }
+ 11.
 .     return scalar d_EF       = d_EF
- 10.     return scalar bF_serialA = bF_A
- 11.     return scalar bE_serialA = bE_A
- 12.     return scalar serialA_total = (aE1+aE2+aE3+aE4+aE5+aE6+aE7) * d_EF * bF_A
- 13. end
+ 12.     return scalar bF_serialA = bF_A
+ 13.     return scalar bE_serialA = bE_A
+ 14.     return scalar serialA_total = (aE1+aE2+aE3+aE4+aE5+aE6+aE7) * d_EF * bF_A
+ 15. end
 
-. 
+.
 . bootstrap ///
 >     serialA_pc1=r(serialA_pc1) serialA_pc2=r(serialA_pc2) serialA_pc3=r(serialA_pc3) ///
 >     serialA_pc4=r(serialA_pc4) serialA_pc5=r(serialA_pc5) serialA_pc6=r(serialA_pc6) ///
 >     serialA_pc7=r(serialA_pc7) ///
 >     d_EF=r(d_EF) bE_serialA=r(bE_serialA) bF_serialA=r(bF_serialA) ///
 >     serialA_total=r(serialA_total), ///
->     reps(2000) seed(42): serial_A
-(running serial_A on estimation sample)
+>     reps(2000) seed(42) bca ties ///
+>     saving("stata/output/bootstrap_serialA.dta", replace): serialA
+(running serialA on estimation sample)
+
+Jackknife replications (200): .........10.........20.........30.........40.........50.........60.........70.........80.........90...
+> ......100.........110.........120.........130.........140.........150.........160.........170.........180.........190.........200
+> done
+(file stata/output/bootstrap_serialA.dta not found)
 
 Bootstrap replications (2,000): .........10.........20.........30.........40.........50.........60.........70.........80.........90.
 > ........100.........110.........120.........130.........140.........150.........160.........170.........180.........190.........20
@@ -1069,7 +1168,7 @@ Bootstrap replications (2,000): .........10.........20.........30.........40....
 Bootstrap results                                        Number of obs =   200
                                                          Replications  = 2,000
 
-      Command: serial_A
+      Command: serialA
   serialA_pc1: r(serialA_pc1)
   serialA_pc2: r(serialA_pc2)
   serialA_pc3: r(serialA_pc3)
@@ -1099,21 +1198,79 @@ serialA_total: r(serialA_total)
 serialA_total |  -.0500999   .0486034    -1.03   0.303    -.1453609     .045161
 -------------------------------------------------------------------------------
 
-. est store boot_serial_A
+. est store boot_serialA
 
-. 
-. esttab boot_serial_A using "stata/output/T5A_serial_path_A.rtf", replace ///
->     b(%7.4f) ci(%7.4f) star(* 0.10 ** 0.05 *** 0.01) ///
->     title("Table 5A. Serial Mediation Path A: Visual -> M_E -> M_F -> Y (Y=favrate)") ///
->     label nonotes addnote("d_EF = halo effect (kansei -> function perception).")
-(output written to stata/output/T5A_serial_path_A.rtf)
+.
+. log using "stata/output/T5A_serial_path_A.txt", ///
+>     name(bootci_serialA) replace text
+(file stata/output/T5A_serial_path_A.txt not found)
+------------------------------------------------------------------------------------------------------------------------------------
+      name:  bootci_serialA
+       log:  stata/output/T5A_serial_path_A.txt
+  log type:  text
+ opened on:  20 Jul 2026, 22:30:02
 
-. 
-. 
+. estat bootstrap, percentile bca
+
+Bootstrap results                               Number of obs     =        200
+                                                Replications      =       2000
+
+      Command: serialA
+  serialA_pc1: r(serialA_pc1)
+  serialA_pc2: r(serialA_pc2)
+  serialA_pc3: r(serialA_pc3)
+  serialA_pc4: r(serialA_pc4)
+  serialA_pc5: r(serialA_pc5)
+  serialA_pc6: r(serialA_pc6)
+  serialA_pc7: r(serialA_pc7)
+         d_EF: r(d_EF)
+   bE_serialA: r(bE_serialA)
+   bF_serialA: r(bF_serialA)
+serialA_total: r(serialA_total)
+
+------------------------------------------------------------------------------
+             |    Observed               Bootstrap
+             | coefficient       Bias    std. err.  [95% conf. interval]
+-------------+----------------------------------------------------------------
+ serialA_pc1 |   .00187423   .0000232   .01468075   -.0277739   .0323801   (P)
+             |                                      -.0244043   .0393713 (BCa)
+ serialA_pc2 |  -.00528855  -.0009324   .01321922    -.035716   .0201621   (P)
+             |                                      -.0346314    .021521 (BCa)
+ serialA_pc3 |  -.04109745  -.0030236   .02027129   -.0891493  -.0110226   (P)
+             |                                      -.0857697   -.009662 (BCa)
+ serialA_pc4 |  -.00034464  -.0016215    .0122565   -.0297933   .0214703   (P)
+             |                                      -.0240435   .0254418 (BCa)
+ serialA_pc5 |   .00808957   .0002267   .00931901   -.0078049   .0294146   (P)
+             |                                       -.006232   .0318412 (BCa)
+ serialA_pc6 |  -.00129216  -.0002781   .01042248   -.0222589   .0184767   (P)
+             |                                       -.022219   .0184797 (BCa)
+ serialA_pc7 |  -.01204095  -.0003639   .01131418   -.0377556   .0078951   (P)
+             |                                      -.0400402   .0064775 (BCa)
+        d_EF |   .53586449   .0073868    .0685824    .4249954   .6916408   (P)
+             |                                       .4184617   .6776828 (BCa)
+  bE_serialA |   .24931454   .0118186   .07794363    .1148201   .4223244   (P)
+             |                                       .0934183   .3927336 (BCa)
+  bF_serialA |  -.25433728  -.0132103   .09030202   -.4522863  -.0953159   (P)
+             |                                      -.4241685  -.0629395 (BCa)
+serialA_to~l |  -.05009995  -.0059696   .04860342   -.1674397    .021774   (P)
+             |                                      -.1592626   .0260224 (BCa)
+------------------------------------------------------------------------------
+Key:   P: Percentile
+     BCa: Bias-corrected and accelerated (adjusted for ties)
+
+. log close bootci_serialA
+      name:  bootci_serialA
+       log:  stata/output/T5A_serial_path_A.txt
+  log type:  text
+ closed on:  20 Jul 2026, 22:30:02
+------------------------------------------------------------------------------------------------------------------------------------
+
+.
+.
 . *==============================================================================
 . * Part 5. Serial Mediation Path B: Visual -> M_F -> M_E -> Y
 . *==============================================================================
-. use "data/processed/product_master.dta", clear
+. use "data_anonymized/product_master.dta", clear
 
 . global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
@@ -1125,38 +1282,46 @@ serialA_total |  -.0500999   .0486034    -1.03   0.303    -.1453609     .045161
 
 . global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
-. 
-. capture program drop serial_B
+.
+. capture program drop serialB
 
-. program serial_B, rclass
-  1.     sem ($MF <- $X $CTRL) ///
+. program serialB, rclass
+  1.     syntax [if] [in]
+  2.     marksample touse
+  3.     sem ($MF <- $X $CTRL) ///
 >         ($ME <- $X $MF $CTRL) ///
->         ($Y  <- $X $ME $MF $CTRL)
-  2. 
+>         ($Y  <- $X $ME $MF $CTRL) if `touse'
+  4.
 .     scalar d_FE  = _b[$ME:$MF]
-  3.     scalar bE_B  = _b[$Y:$ME]
-  4.     scalar bF_B  = _b[$Y:$MF]
-  5. 
+  5.     scalar bE_B  = _b[$Y:$ME]
+  6.     scalar bF_B  = _b[$Y:$MF]
+  7.
 .     forvalues i = 1/7 {
-  6.         scalar aF`i' = _b[$MF:z_pc`i'_s]
-  7.         return scalar serialB_pc`i' = aF`i' * d_FE * bE_B
-  8.     }
-  9. 
+  8.         scalar aF`i' = _b[$MF:z_pc`i'_s]
+  9.         return scalar serialB_pc`i' = aF`i' * d_FE * bE_B
+ 10.     }
+ 11.
 .     return scalar d_FE       = d_FE
- 10.     return scalar bE_serialB = bE_B
- 11.     return scalar bF_serialB = bF_B
- 12.     return scalar serialB_total = (aF1+aF2+aF3+aF4+aF5+aF6+aF7) * d_FE * bE_B
- 13. end
+ 12.     return scalar bE_serialB = bE_B
+ 13.     return scalar bF_serialB = bF_B
+ 14.     return scalar serialB_total = (aF1+aF2+aF3+aF4+aF5+aF6+aF7) * d_FE * bE_B
+ 15. end
 
-. 
+.
 . bootstrap ///
 >     serialB_pc1=r(serialB_pc1) serialB_pc2=r(serialB_pc2) serialB_pc3=r(serialB_pc3) ///
 >     serialB_pc4=r(serialB_pc4) serialB_pc5=r(serialB_pc5) serialB_pc6=r(serialB_pc6) ///
 >     serialB_pc7=r(serialB_pc7) ///
 >     d_FE=r(d_FE) bE_serialB=r(bE_serialB) bF_serialB=r(bF_serialB) ///
 >     serialB_total=r(serialB_total), ///
->     reps(2000) seed(42): serial_B
-(running serial_B on estimation sample)
+>     reps(2000) seed(42) bca ties ///
+>     saving("stata/output/bootstrap_serialB.dta", replace): serialB
+(running serialB on estimation sample)
+
+Jackknife replications (200): .........10.........20.........30.........40.........50.........60.........70.........80.........90...
+> ......100.........110.........120.........130.........140.........150.........160.........170.........180.........190.........200
+> done
+(file stata/output/bootstrap_serialB.dta not found)
 
 Bootstrap replications (2,000): .........10.........20.........30.........40.........50.........60.........70.........80.........90.
 > ........100.........110.........120.........130.........140.........150.........160.........170.........180.........190.........20
@@ -1183,7 +1348,7 @@ Bootstrap replications (2,000): .........10.........20.........30.........40....
 Bootstrap results                                        Number of obs =   200
                                                          Replications  = 2,000
 
-      Command: serial_B
+      Command: serialB
   serialB_pc1: r(serialB_pc1)
   serialB_pc2: r(serialB_pc2)
   serialB_pc3: r(serialB_pc3)
@@ -1213,27 +1378,85 @@ serialB_total: r(serialB_total)
 serialB_total |   .0044745   .0331606     0.13   0.893     -.060519     .069468
 -------------------------------------------------------------------------------
 
-. est store boot_serial_B
+. est store boot_serialB
 
-. 
-. esttab boot_serial_B using "stata/output/T5B_serial_path_B.rtf", replace ///
->     b(%7.4f) ci(%7.4f) star(* 0.10 ** 0.05 *** 0.01) ///
->     title("Table 5B. Serial Mediation Path B: Visual -> M_F -> M_E -> Y (Y=favrate)") ///
->     label nonotes addnote("d_FE = function-to-kansei spillover.")
-(output written to stata/output/T5B_serial_path_B.rtf)
+.
+. log using "stata/output/T5B_serial_path_B.txt", ///
+>     name(bootci_serialB) replace text
+(file stata/output/T5B_serial_path_B.txt not found)
+------------------------------------------------------------------------------------------------------------------------------------
+      name:  bootci_serialB
+       log:  stata/output/T5B_serial_path_B.txt
+  log type:  text
+ opened on:  20 Jul 2026, 22:36:00
 
-. 
-. 
+. estat bootstrap, percentile bca
+
+Bootstrap results                               Number of obs     =        200
+                                                Replications      =       2000
+
+      Command: serialB
+  serialB_pc1: r(serialB_pc1)
+  serialB_pc2: r(serialB_pc2)
+  serialB_pc3: r(serialB_pc3)
+  serialB_pc4: r(serialB_pc4)
+  serialB_pc5: r(serialB_pc5)
+  serialB_pc6: r(serialB_pc6)
+  serialB_pc7: r(serialB_pc7)
+         d_FE: r(d_FE)
+   bE_serialB: r(bE_serialB)
+   bF_serialB: r(bF_serialB)
+serialB_total: r(serialB_total)
+
+------------------------------------------------------------------------------
+             |    Observed               Bootstrap
+             | coefficient       Bias    std. err.  [95% conf. interval]
+-------------+----------------------------------------------------------------
+ serialB_pc1 |   .01108751   .0012924    .0123807   -.0102461   .0389804   (P)
+             |                                      -.0106955   .0385443 (BCa)
+ serialB_pc2 |  -.00829267   .0003454   .00992889   -.0287692   .0110217   (P)
+             |                                      -.0306886   .0090222 (BCa)
+ serialB_pc3 |  -.00689173    .001337   .01098002   -.0270897    .017159   (P)
+             |                                      -.0311837   .0134076 (BCa)
+ serialB_pc4 |  -.00807224    .000414   .01096783   -.0315362   .0131932   (P)
+             |                                      -.0338849   .0111894 (BCa)
+ serialB_pc5 |  -.00360036  -.0013422    .0094894   -.0258418   .0121244   (P)
+             |                                      -.0239193   .0135031 (BCa)
+ serialB_pc6 |   .01643966    .000375   .01065325   -.0017725   .0402826   (P)
+             |                                      -.0011858   .0414507 (BCa)
+ serialB_pc7 |   .00380434   .0011323   .01175549   -.0162426   .0309916   (P)
+             |                                      -.0182662   .0274055 (BCa)
+        d_FE |   .57919446  -.0025461   .08189027    .4299333   .7441271   (P)
+             |                                       .4485063   .7701043 (BCa)
+  bE_serialB |   .24931454   .0118186   .07794363    .1148201   .4223244   (P)
+             |                                       .0934183   .3927336 (BCa)
+  bF_serialB |  -.25433728  -.0132103   .09030202   -.4522863  -.0953159   (P)
+             |                                      -.4241685  -.0629395 (BCa)
+serialB_to~l |    .0044745   .0035539   .03316057   -.0560585   .0810152   (P)
+             |                                      -.0609848   .0723401 (BCa)
+------------------------------------------------------------------------------
+Key:   P: Percentile
+     BCa: Bias-corrected and accelerated (adjusted for ties)
+
+. log close bootci_serialB
+      name:  bootci_serialB
+       log:  stata/output/T5B_serial_path_B.txt
+  log type:  text
+ closed on:  20 Jul 2026, 22:36:00
+------------------------------------------------------------------------------------------------------------------------------------
+
+.
+.
 . *==============================================================================
 . * Part 6. 分维度探索 (12 mediators) + FDR 校正所需 p 值
 . *==============================================================================
-. use "data/processed/product_master.dta", clear
+. use "data_anonymized/product_master.dta", clear
 
 . global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
 . global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
-. 
+.
 . reg y_favrate_only_s $X ///
 >     me1_z_s me2_z_s me3_z_s me4_z_s me5_z_s ///
 >     mf1_z_s mf2_z_s mf3_z_s mf4_z_s mf5_z_s mf6_z_s mf7_z_s ///
@@ -1280,7 +1503,7 @@ ln_brand_avg_price_s |   -.149287   .1090878    -1.37   0.173    -.3646013    .0
 
 . est store m_decomp
 
-. 
+.
 . esttab m_decomp using "stata/output/T6_decomposition.rtf", replace ///
 >     b(%6.3f) t(%6.2f) star(* 0.10 ** 0.05 *** 0.01) ///
 >     scalar(N r2 r2_a F) compress nogaps label ///
@@ -1288,7 +1511,7 @@ ln_brand_avg_price_s |   -.149287   .1090878    -1.37   0.173    -.3646013    .0
 >     nonotes
 (output written to stata/output/T6_decomposition.rtf)
 
-. 
+.
 . * 导出 p 值供 Python FDR 校正
 . capture file close fh
 
@@ -1310,12 +1533,12 @@ ln_brand_avg_price_s |   -.149287   .1090878    -1.37   0.173    -.3646013    .0
 . display "P-values exported to stata/output/T6_decomp_pvalues.csv"
 P-values exported to stata/output/T6_decomp_pvalues.csv
 
-. 
-. 
+.
+.
 . *==============================================================================
 . * Part 7. 稳健性 N=185 (n_reviews >= 20)
 . *==============================================================================
-. use "data/processed/product_master.dta", clear
+. use "data_anonymized/product_master.dta", clear
 
 . global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
@@ -1327,14 +1550,14 @@ P-values exported to stata/output/T6_decomp_pvalues.csv
 
 . global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
-. 
+.
 . keep if included_main == 1
 (15 observations deleted)
 
 . display "Subsample N = " _N
 Subsample N = 185
 
-. 
+.
 . reg $ME $X $CTRL, vce(robust)
 
 Linear regression                               Number of obs     =        185
@@ -1461,7 +1684,7 @@ ln_brand_avg_price_s |  -.0743294   .1109992    -0.67   0.504    -.2934624    .1
 
 . est store r4
 
-. 
+.
 . esttab r1 r2 r3 r4 using "stata/output/T7_robust_N185.rtf", replace ///
 >     b(%6.3f) t(%6.2f) star(* 0.10 ** 0.05 *** 0.01) ///
 >     scalar(N r2 r2_a F) compress nogaps label ///
@@ -1469,12 +1692,12 @@ ln_brand_avg_price_s |  -.0743294   .1109992    -0.67   0.504    -.2934624    .1
 >     title("Table 7. Robustness: Subsample N=185 (n_reviews>=20), Y=favorable-rate only") nonotes
 (output written to stata/output/T7_robust_N185.rtf)
 
-. 
-. 
+.
+.
 . *==============================================================================
 . * Part 8. 稳健性 — 5 种 Y 变体 (现在把 composite 等作为稳健性对照)
 . *==============================================================================
-. use "data/processed/product_master.dta", clear
+. use "data_anonymized/product_master.dta", clear
 
 . global X    "z_pc1_s z_pc2_s z_pc3_s z_pc4_s z_pc5_s z_pc6_s z_pc7_s"
 
@@ -1484,7 +1707,7 @@ ln_brand_avg_price_s |  -.0743294   .1109992    -0.67   0.504    -.2934624    .1
 
 . global CTRL "lnprice_s lnreviews_s has_discount_s free_shipping_s ln_imperfection_s ln_brand_avg_price_s recency_inv_s"
 
-. 
+.
 . * Col 1: PRIMARY (favorable-rate only)
 . reg y_favrate_only_s   $X $ME $MF $CTRL, vce(robust)
 
@@ -1652,7 +1875,7 @@ ln_brand_avg_price_s |   .0903038   .1280369     0.71   0.482    -.1623146    .3
 
 . est store y5
 
-. 
+.
 . esttab y1 y2 y3 y4 y5 using "stata/output/T8_robust_Y_variants.rtf", replace ///
 >     b(%6.3f) t(%6.2f) star(* 0.10 ** 0.05 *** 0.01) ///
 >     scalar(N r2 r2_a F) compress nogaps label ///
@@ -1665,14 +1888,14 @@ ln_brand_avg_price_s |   .0903038   .1280369     0.71   0.482    -.1623146    .3
 >             "Checks if M_E (+) and M_F (-) signs hold across different Y definitions.")
 (output written to stata/output/T8_robust_Y_variants.rtf)
 
-. 
-. 
+.
+.
 . *==============================================================================
 . * 收尾
 . *==============================================================================
 . log close
       name:  <unnamed>
-       log:  .\stata/output/main_analysis.log
+       log:  stata/main_analysis.log
   log type:  text
- closed on:  13 Jul 2026, 01:37:00
+ closed on:  20 Jul 2026, 22:36:01
 ------------------------------------------------------------------------------------------------------------------------------------
