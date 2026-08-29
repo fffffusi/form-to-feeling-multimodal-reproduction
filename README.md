@@ -82,15 +82,21 @@ form-to-feeling-multimodal-reproduction/
 │   ├── prepare_stata_data.py
 │   │   └── Prepares product-level data for Stata
 │   ├── fdr_correction.py
-│   │   └── Benjamini-Hochberg FDR correction
+│   │   └── Benjamini-Hochberg FDR correction for the 12-mediator decomposition
+│   ├── joint_significance_fdr.py
+│   │   └── Joint-significance and FDR analysis for 14 PC-specific indirect pathways
 │   └── common_method_and_diagnostic_checks.py
 │       └── Common-method and functional-evaluation diagnostics
 │
 └── stata/
     ├── main_analysis.do
     │   └── Main path regressions, BCa-bootstrap indirect associations, robustness checks, and diagnostics
-    └── main_analysis.log
-        └── Stata execution log
+    ├── main_analysis.log
+    │   └── Stata execution log
+    ├── robustness_analysis.do
+    │   └── Supplementary multiple-testing and review-volume sensitivity analyses
+    └── robustness_analysis.log
+        └── Concise public audit log without machine paths, timestamps, or repeated tables
 ```
 
 ## Main analysis command
@@ -114,6 +120,51 @@ stata/output/
 ```
 
 Bootstrap output reports both percentile and bias-corrected and accelerated (BCa) confidence intervals.
+
+## Robustness analyses
+
+The supplementary Stata script addresses two additional checks:
+
+1. fourteen component-specific indirect pathways formed by seven visual principal components and two evaluation channels;
+2. sensitivity of the platform favorable-rate regressions to review-volume precision, using minimum-review thresholds of 50 and 100 and a proxy review-volume weighted specification.
+
+Run the supplementary Stata analysis from the repository root:
+
+```stata
+do stata/robustness_analysis.do
+```
+
+This script reproduces the required transformations from the anonymized public data, performs 5,000 product-level bootstrap replications, and writes locally generated CSV, DTA, bootstrap-log, and RTF table files to:
+
+```text
+stata/output_robustness/
+```
+
+The generated output directory is intentionally not versioned. The repository includes only `stata/robustness_analysis.log`, a concise audit record without machine-specific paths, execution timestamps, or duplicated regression tables.
+
+After the Stata script completes, run:
+
+```bash
+python scripts_stata_prep/joint_significance_fdr.py
+```
+
+For each indirect pathway, the script tests the composite null hypothesis
+`H0: a*b = 0` using the joint-significance p-value `max(p_a, p_b)`. It then
+applies Benjamini-Hochberg (BH) and Benjamini-Yekutieli (BY) adjustments across
+the family of 14 pathway-level p-values. Indirect-association magnitudes,
+bootstrap standard errors, and BCa confidence intervals remain those generated
+by the 5,000-replication Stata bootstrap.
+
+The existing `scripts_stata_prep/fdr_correction.py` serves a different purpose:
+it adjusts the 12 p-values from the affective and functional subdimension
+decomposition. It should not be used in place of the 14-path joint-significance
+analysis.
+
+`n_reviews_total` is the number of review texts collected for each product. It
+has not been verified as the exact denominator used by the platform to calculate
+the favorable rate. The weighted specification is therefore a proxy sensitivity
+analysis, whereas the minimum-review-threshold analyses provide the more direct
+sample-restriction checks.
 
 The analysis uses Stata 18 and the `estout` package:
 
@@ -158,6 +209,9 @@ The anonymized master data include:
 ## References
 
 - Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate: A practical and powerful approach to multiple testing. *Journal of the Royal Statistical Society: Series B*, 57(1), 289–300.
+- Benjamini, Y., & Yekutieli, D. (2001). The control of the false discovery rate in multiple testing under dependency. *The Annals of Statistics*, 29(4), 1165–1188. https://doi.org/10.1214/aos/1013699998
+- MacKinnon, D. P., Lockwood, C. M., Hoffman, J. M., West, S. G., & Sheets, V. (2002). A comparison of methods to test mediation and other intervening variable effects. *Psychological Methods*, 7(1), 83–104. https://doi.org/10.1037/1082-989X.7.1.83
 - Radford, A., Kim, J. W., Hallacy, C., et al. (2021). Learning transferable visual models from natural language supervision. *Proceedings of the 38th International Conference on Machine Learning*.
+- Yzerbyt, V., Muller, D., Batailler, C., & Judd, C. M. (2018). New recommendations for testing indirect effects in mediational models: The need to report and test component paths. *Journal of Personality and Social Psychology*, 115(6), 929–943. https://doi.org/10.1037/pspa0000132
 
 Please cite the associated manuscript when using these files.

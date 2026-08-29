@@ -1,0 +1,15 @@
+Robustness analysis audit log
+Data: data_anonymized/product_master.dta
+Unit of analysis: product
+Products: 200
+Products with n_reviews_total >= 20: 185
+Products with n_reviews_total >= 50: 165
+Products with n_reviews_total >= 100: 131
+Indirect associations: 14
+Bootstrap replications: 5000
+Bootstrap seed: 42
+Bootstrap interval: BCa 95%
+Threshold regressions: n_reviews_total >= 50 and >= 100
+Weighted regression: analytic weight = n_reviews_total (proxy only)
+Regression standard errors: heteroskedasticity robust
+Status: completed without error

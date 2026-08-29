@@ -19,6 +19,7 @@ data/interim/
 data/satisfaction/
 data/processed/
 stata/output/
+stata/output_robustness/
 
 # Runtime metadata and checkpoints
 *_metadata.json
